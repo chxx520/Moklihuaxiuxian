@@ -1,3 +1,4 @@
+import { findAsset } from "./assets";
 // 水墨风占位美术：用代码生成场景（远山、雾、宣纸纹理、前景器物）和人物剪影。
 // 正式美术到位后，只需要把 renderScene / renderFigure 换成图片即可。
 
@@ -275,6 +276,14 @@ const FIG: Record<string, string> = {
     <path d="M70 140 Q86 146 90 152" stroke="currentColor" stroke-width="8" stroke-linecap="round" fill="none"/>`,
 };
 
+FIG["温晚"] = `<ellipse cx="60" cy="40" rx="13" ry="16"/>
+    <path d="M47 34 Q44 70 40 110 L50 104 Q50 70 52 46 Z M73 34 Q76 70 80 110 L70 104 Q70 70 68 46 Z" opacity="0.8"/>
+    <path d="M48 58 Q38 66 36 100 L30 230 Q60 250 90 230 L84 100 Q82 66 72 58 Q60 68 48 58 Z" opacity="0.75"/>
+    <path d="M30 230 Q40 260 34 290 M60 240 Q66 268 58 296 M90 230 Q84 262 92 288" stroke="currentColor" stroke-width="6" fill="none" opacity="0.35"/>`;
+FIG["阿禾"] = `<ellipse cx="60" cy="150" rx="7" ry="6"/><ellipse cx="60" cy="168" rx="13" ry="14"/>
+    <path d="M48 183 Q41 190 39 214 L34 290 L86 290 L81 214 Q79 190 72 183 Q60 191 48 183 Z"/>
+    <path d="M82 210 l14 -18" stroke="currentColor" stroke-width="3"/>`;
+
 export function hasFigure(name: string) {
   return name in FIG;
 }
@@ -288,4 +297,48 @@ export function renderFigure(name: string): string {
     <mask id="fmask"><rect width="120" height="300" fill="url(#ffade)"/></mask></defs>
     <g fill="currentColor" color="currentColor" filter="url(#fink)" mask="url(#fmask)">${body}</g>
   </svg>`, `f${++uid}_`);
+}
+
+// ———— 敌人 ————
+
+const FOE: Record<string, string> = {
+  饥影: `<path d="M50 20 q14 -4 22 8 q6 12 -2 22 q10 6 12 30 l10 50 l-8 2 l-12 -42 l-4 50 l-8 0 l-2 -48 l-8 46 l-8 -2 l6 -52 q-8 10 -20 30 l-6 -4 q12 -26 24 -40 q-8 -14 4 -50 Z"/>
+    <ellipse cx="56" cy="34" rx="2.5" ry="2" fill="#e8c36a"/><ellipse cx="66" cy="34" rx="2.5" ry="2" fill="#e8c36a"/>
+    <ellipse cx="60" cy="78" rx="8" ry="10" fill="#f3ecdc" opacity="0.35"/>`,
+  饥祟: `<path d="M60 8 q30 4 34 40 q4 36 -6 60 l10 52 l-76 0 l10 -52 q-10 -24 -6 -60 q4 -36 34 -40 Z" opacity="0.92"/>
+    <ellipse cx="60" cy="74" rx="16" ry="22" fill="#f3ecdc" opacity="0.3"/>
+    <ellipse cx="50" cy="38" rx="3" ry="2.4" fill="#e8c36a"/><ellipse cx="70" cy="38" rx="3" ry="2.4" fill="#e8c36a"/>
+    <path d="M28 70 q-20 -8 -26 -26 M92 70 q20 -8 26 -26 M30 96 q-22 6 -30 0 M90 96 q22 6 30 0" stroke="currentColor" stroke-width="4" fill="none"/>
+    <path d="M-4 40 h14 q-1 6 -7 6 q-6 0 -7 -6 Z M110 40 h14 q-1 6 -7 6 q-6 0 -7 -6 Z M-6 92 h14 q-1 6 -7 6 q-6 0 -7 -6 Z M112 92 h14 q-1 6 -7 6 q-6 0 -7 -6 Z" fill="#8a7a62"/>
+    <path d="M40 120 l-6 30 M80 120 l6 30 M60 124 l0 34" stroke="#b39c6a" stroke-width="2" opacity="0.7"/>`,
+  屏障: `<circle cx="60" cy="80" r="52" fill="none" stroke="currentColor" stroke-width="6" opacity="0.8"/>
+    <circle cx="60" cy="80" r="40" fill="currentColor" opacity="0.25"/>
+    <path d="M60 36 v88 M16 80 h88 M30 50 l60 60 M90 50 l-60 60" stroke="#a8443a" stroke-width="2.5" opacity="0.85"/>`,
+};
+
+export function enemyArt(name: string): string {
+  const img = findAsset("enemies", name);
+  if (img) return `<img src="${img}" alt="">`;
+  const body = FOE[name] ?? FOE["饥影"];
+  return scope(`<svg viewBox="-10 0 140 170" xmlns="http://www.w3.org/2000/svg"><defs><filter id="ef"><feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter></defs><g fill="currentColor" color="currentColor" filter="url(#ef)">${body}</g></svg>`, `e${++uid}_`);
+}
+
+/** 场景：有插画用插画，否则用代码生成的水墨图 */
+export function sceneHtml(name: string, mood: Mood, variant: string, image?: string): string {
+  const img = (image && findAsset("scenes", image)) || findAsset("scenes", name, name + "_");
+  if (img) return `<img class="scene-img" src="${img}" alt=""><div class="mist-overlay"></div>`;
+  return renderScene(name, mood, variant);
+}
+
+/** 立绘：portrait 形如「温小满_8岁#笑」。有图用图，否则用剪影。 */
+export function figureHtml(portrait: string): string {
+  const [key, expr] = portrait.split("#");
+  const img = findAsset("characters", expr ? `${key}_${expr}` : key, key);
+  if (img) return `<img class="portrait" src="${img}" alt="">`;
+  return renderFigure(key.split("_")[0]);
+}
+
+export function hasPortrait(portrait: string) {
+  const key = portrait.split("#")[0];
+  return !!findAsset("characters", key, key) || hasFigure(key.split("_")[0]);
 }

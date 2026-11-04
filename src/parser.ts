@@ -6,8 +6,9 @@ export type Value = boolean | number | string;
 export type Cond = { key: string; op: "truthy" | "falsy" | "eq" | "neq"; value?: Value };
 
 export type Item =
-  | { t: "line"; speaker?: string; text: string; kind: "narration" | "dialogue" | "system"; cond?: Cond[] }
-  | { t: "scene"; name: string; sub?: string; mood?: string; variant?: string; cond?: Cond[] }
+  | { t: "line"; speaker?: string; expr?: string; text: string; kind: "narration" | "dialogue" | "system"; cond?: Cond[] }
+  | { t: "scene"; name: string; sub?: string; mood?: string; variant?: string; image?: string; cond?: Cond[] }
+  | { t: "cmd"; name: string; arg: string; cond?: Cond[] }
   | { t: "chapter"; text: string; cond?: Cond[] }
   | { t: "set"; key: string; value: Value; cond?: Cond[] }
   | { t: "spell"; name: string; cond?: Cond[] }
@@ -18,7 +19,7 @@ export type Item =
   | { t: "menu"; options: MenuOption[]; cond?: Cond[] }
   | { t: "hub"; spots: HubSpot[]; cond?: Cond[] };
 
-export type MenuOption = { text: string; cond?: Cond[]; body: Item[] };
+export type MenuOption = { text: string; cond?: Cond[]; lock?: { cond: Cond[]; reason: string }; body: Item[] };
 export type HubSpot = { text: string; target: string; exit: boolean; cond?: Cond[] };
 
 export type StoryNode = { id: string; file: string; items: Item[] };
@@ -61,10 +62,12 @@ function parseLine(text: string, file: string, lineNo: number): Item {
 
   if (body.startsWith("->")) return { t: "goto", target: body.slice(2).trim(), cond };
   if (body.startsWith("@scene")) {
-    const [name, sub, look] = body.slice(6).split("|").map((s) => s.trim());
+    const [name, sub, look, image] = body.slice(6).split("|").map((s) => s.trim());
     const [mood, variant] = (look ?? "").split("/").map((s) => s.trim());
-    return { t: "scene", name, sub: sub || undefined, mood: mood || undefined, variant: variant || undefined, cond };
+    return { t: "scene", name, sub: sub || undefined, mood: mood || undefined, variant: variant || undefined, image: image || undefined, cond };
   }
+  const cm = body.match(/^@(cast|cg|card|music|sfx|battle|draw|checkpoint|pause)\b\s*(.*)$/);
+  if (cm) return { t: "cmd", name: cm[1], arg: cm[2].trim().replace(/\\n/g, "\n"), cond };
   if (body.startsWith("@chapter")) return { t: "chapter", text: body.slice(8).trim(), cond };
   if (body.startsWith("@end")) return { t: "end", text: body.slice(4).trim().replace(/\\n/g, "\n"), cond };
   if (body.startsWith("~")) {
@@ -80,8 +83,8 @@ function parseLine(text: string, file: string, lineNo: number): Item {
     throw new StoryError(`${where} 无法识别的指令：${body}`);
   }
   if (body.startsWith("〔")) return { t: "line", kind: "system", text: body, cond };
-  const dm = body.match(/^([^：\s]{1,8})：(.+)$/);
-  if (dm) return { t: "line", kind: "dialogue", speaker: dm[1], text: dm[2], cond };
+  const dm = body.match(/^([^：\s\[]{1,8})(?:\[([^\]]+)\])?：(.+)$/);
+  if (dm) return { t: "line", kind: "dialogue", speaker: dm[1], expr: dm[2], text: dm[3], cond };
   return { t: "line", kind: "narration", text: body, cond };
 }
 
@@ -121,8 +124,16 @@ export function parseStory(files: Record<string, string>): Story {
       }
 
       if (text.startsWith("+")) {
-        const [body, cond] = takeCond(text.slice(1).trim());
-        const opt: MenuOption = { text: body, cond, body: [] };
+        let raw = text.slice(1).trim();
+        // [lock?条件 原因]：选项总是显示，但条件不满足时锁住并显示原因
+        let lock: MenuOption["lock"];
+        const lm = raw.match(/\s*\[lock\?([^\s\]]+)\s+([^\]]+)\]/);
+        if (lm) {
+          lock = { cond: parseCond(lm[1]), reason: lm[2].trim() };
+          raw = raw.replace(lm[0], "");
+        }
+        const [body, cond] = takeCond(raw);
+        const opt: MenuOption = { text: body, cond, lock, body: [] };
         const jm = body.match(/^(.*?)\s*->\s*(\S+)$/);
         if (jm) {
           opt.text = jm[1];

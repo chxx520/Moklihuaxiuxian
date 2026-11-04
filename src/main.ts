@@ -1,8 +1,12 @@
-// 入口：标题画面、新游戏、继续、旧事录、调试面板。
+// 入口：标题画面、新游戏、继续、存读档、章节回溯、旧事录、设置、试玩日志、调试面板。
+import { renderScene } from "./art";
+import { assetCount } from "./assets";
+import { applyVolume, playMusic, stopMusic, unlockAudio } from "./audio";
+import { battleIds } from "./battle";
 import { Engine, GameState, newState } from "./engine";
 import { lintStory, parseStory, parseValue } from "./parser";
-import { clearAuto, loadSaves } from "./save";
-import { renderScene } from "./art";
+import { clearAuto, clearLog, getSettings, loadSaves, logEvent, saveSlot, setSettings, writeSaves } from "./save";
+import { SPELLS, SPELL_ORDER } from "./spells";
 import { $, DomPresenter, el } from "./ui";
 // @ts-ignore 由构建脚本注入：{ 文件名: 剧本文本 }
 import storyFiles from "virtual:story";
@@ -24,7 +28,7 @@ function sheet(title: string, body: HTMLElement, actions: [string, () => void][]
       el("div", { class: "sheet-head" }, el("h2", {}, title), el("button", { class: "icon" }, "✕")),
       body,
       el("div", { class: "sheet-actions" }, ...actions.map(([label, fn]) => {
-        const b = el("button", { class: "choice" }, label);
+        const b = el("button", { class: "choice" }, el("span", {}, label));
         b.addEventListener("click", () => { close(); fn(); });
         return b;
       })),
@@ -36,22 +40,101 @@ function sheet(title: string, body: HTMLElement, actions: [string, () => void][]
   return close;
 }
 
+const fmtTime = (t: number) => {
+  const d = new Date(t);
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
 function showJournal() {
   const s = engine?.state;
   if (!s) return;
+  const spells = SPELL_ORDER.filter((n) => s.spells.includes(n)).map((n) => SPELLS[n]);
   const body = el("div", { class: "journal" },
     el("h3", {}, "当前目标"),
     el("p", {}, s.goal ?? "（暂无）"),
     el("h3", {}, "旧事与线索"),
     s.clues.length ? el("ul", {}, ...s.clues.map((c) => el("li", {}, c.text))) : el("p", { class: "dim" }, "还没有记下什么。"),
     el("h3", {}, "已习得术法"),
-    s.spells.length ? el("p", {}, s.spells.join("、")) : el("p", { class: "dim" }, "无"),
+    spells.length
+      ? el("ul", {}, ...spells.map((sp) => el("li", {}, el("b", {}, `${sp.name}`), `（${sp.kind}，灵力 ${sp.cost}${sp.paper ? `，符纸 ${sp.paper}` : ""}）${sp.desc}${sp.field ? `　探索：${sp.field}` : ""}`)))
+      : el("p", { class: "dim" }, "无"),
   );
   sheet("旧事录", body);
 }
 
+function slotList(mode: "save" | "load") {
+  const saves = loadSaves();
+  const box = el("div", {});
+  saves.slots.forEach((st, i) => {
+    const info = el("div", { class: "info" }, st ? `${st.chapter ?? ""}\n${fmtTime(st.savedAt)}` : "（空）");
+    info.style.whiteSpace = "pre-line";
+    const btn = el("button", { class: "choice" }, el("span", {}, mode === "save" ? "存到这里" : "读取"));
+    if (mode === "load" && !st) btn.setAttribute("disabled", "");
+    btn.addEventListener("click", () => {
+      document.querySelector(".sheet-wrap")?.remove();
+      if (mode === "save" && engine) { saveSlot(i, engine.state); presenter.toast(`已存到第 ${i + 1} 格`); }
+      if (mode === "load" && st) startFrom(structuredClone(st));
+    });
+    box.append(el("div", { class: "slot" }, el("span", {}, `第 ${i + 1} 格`), info, btn));
+  });
+  return box;
+}
+
+function showSlots(mode: "save" | "load") {
+  sheet(mode === "save" ? "存档" : "读档", slotList(mode));
+}
+
+function showCheckpoints() {
+  const cps = loadSaves().checkpoints ?? {};
+  const keys = Object.keys(cps);
+  const body = el("div", {},
+    el("p", { class: "dim" }, "关键选择之前，游戏会自动留一份存档。可以从这里回去，试试另一条路。"),
+    ...(keys.length ? keys.map((k) => {
+      const b = el("button", { class: "choice" }, el("span", {}, `${k}　·　${fmtTime(cps[k].savedAt)}`));
+      b.addEventListener("click", () => { document.querySelector(".sheet-wrap")?.remove(); startFrom(structuredClone(cps[k])); });
+      return b;
+    }) : [el("p", {}, "还没有经过关键选择。")]),
+  );
+  body.querySelectorAll(".choice").forEach((b) => ((b as HTMLElement).style.marginBottom = "8px"));
+  sheet("章节回溯", body);
+}
+
+function showSettings() {
+  const s = getSettings();
+  const slider = (label: string, key: "music" | "sfx", ) => {
+    const input = el("input", { type: "range", min: "0", max: "1", step: "0.05", value: String(s[key]) });
+    input.addEventListener("input", () => { setSettings({ [key]: Number(input.value) }); applyVolume(); });
+    return el("div", { class: "setting" }, el("label", {}, label), input);
+  };
+  const speed = el("input", { type: "range", min: "8", max: "60", step: "2", value: String(68 - s.textSpeed) });
+  speed.addEventListener("input", () => setSettings({ textSpeed: 68 - Number(speed.value) }));
+  sheet("设置", el("div", {}, slider("音乐", "music"), slider("音效", "sfx"), el("div", { class: "setting" }, el("label", {}, "文字速度"), speed)));
+}
+
+function showLog() {
+  const log = loadSaves().log ?? [];
+  const lines = log.map(([t, k, v], i) => {
+    const prev = i ? log[i - 1][0] : t;
+    return `${fmtTime(t)} +${Math.round((t - prev) / 1000)}s ${k} ${v}`;
+  });
+  const box = el("textarea", { class: "log-box", readonly: "" });
+  box.value = `《归山》试玩日志 · ${__BUILD__} · 共 ${log.length} 条 · 跳过对话 ${presenter.skipped} 次\n` + lines.join("\n");
+  sheet("试玩日志", el("div", {}, el("p", { class: "dim" }, "记录了停留时间、选择和挑战结果。点「复制」后发给开发者。"), box), [
+    ["复制", () => {
+      box.select();
+      navigator.clipboard?.writeText(box.value).then(() => presenter.toast("已复制"), () => { document.execCommand("copy"); presenter.toast("已复制"); });
+    }],
+    ["清空日志", () => { clearLog(); presenter.toast("已清空"); }],
+  ]);
+}
+
 function showMenu() {
-  sheet("菜单", el("p", { class: "dim" }, `进度已自动保存。\n版本 ${__BUILD__}`), [
+  sheet("菜单", el("p", { class: "dim" }, `进度会自动保存。\n版本 ${__BUILD__}`), [
+    ["存档", () => showSlots("save")],
+    ["读档", () => showSlots("load")],
+    ["章节回溯", () => showCheckpoints()],
+    ["设置", () => showSettings()],
+    ["试玩日志", () => showLog()],
     ["回到标题", () => toTitle()],
     ["调试面板", () => showDebug()],
   ]);
@@ -61,24 +144,27 @@ function showDebug() {
   const s = engine?.state;
   const facts = el("textarea", { class: "facts", spellcheck: "false" });
   facts.value = s ? JSON.stringify(s.facts, null, 1) : "{}";
+  const jump = (id: string) => {
+    close();
+    const base = engine?.state ?? newState("沈砚", START);
+    try { base.facts = JSON.parse(facts.value); } catch { /* 保留原值 */ }
+    for (const sp of ["驱邪符", "护身符", "明灯符", "定身符", "辨气术", "破煞符"]) if (!base.spells.includes(sp) && debugAllSpells.checked) base.spells.push(sp);
+    startFrom({ ...base, node: id, hub: undefined });
+  };
+  const debugAllSpells = el("input", { type: "checkbox" }) as HTMLInputElement;
   const list = el("div", { class: "node-list" }, ...story.order.map((id) => {
     const b = el("button", { class: "node" }, id);
-    b.addEventListener("click", () => {
-      close();
-      const base = engine?.state ?? newState("沈砚", START);
-      try { base.facts = JSON.parse(facts.value); } catch { /* 保留原值 */ }
-      startFrom({ ...base, node: id, hub: undefined });
-    });
+    b.addEventListener("click", () => jump(id));
     return b;
   }));
+  const quick = el("input", { class: "quick", placeholder: "例如 solution=repair" });
   const body = el("div", { class: "debug" },
-    problems.length ? el("pre", { class: "warn" }, problems.join("\n")) : el("p", { class: "dim" }, `剧本检查通过，共 ${story.order.length} 个节点。`),
+    problems.length ? el("pre", { class: "warn" }, problems.join("\n")) : el("p", { class: "dim" }, `剧本检查通过：${story.order.length} 个节点，${battleIds().length} 场挑战，${assetCount()} 个素材。`),
+    el("label", { class: "dim" }, debugAllSpells, " 跳转时补齐全部术法"),
     el("h3", {}, "跳到节点（保留下方事实）"), list,
     el("h3", {}, "事实（可编辑，跳转时生效）"), facts,
-    el("p", { class: "dim" }, "快捷写法：在下面输入 key=value 后点「设置」"),
+    el("p", { class: "dim" }, "快捷写法：输入 key=value 后点「设置」"), quick,
   );
-  const quick = el("input", { class: "quick", placeholder: "例如 solution=repair" });
-  body.append(quick);
   const close = sheet("调试面板", body, [
     ["设置", () => {
       const m = quick.value.match(/^\s*([\w.]+)\s*=\s*(.+)$/);
@@ -91,8 +177,11 @@ function showDebug() {
 function startFrom(state: GameState) {
   engine?.stop();
   presenter.reset();
+  document.querySelectorAll(".battle, .draw, .cg, .time-card, .end-card").forEach((n) => n.remove());
+  state.cast ??= {};
   $("#title").hidden = true;
   $("#game").hidden = false;
+  logEvent("start", state.node);
   engine = new Engine(story, state, presenter);
   const mine = engine;
   mine.run().then(() => {
@@ -116,12 +205,15 @@ function toTitle(finished = false) {
   engine?.stop();
   engine = null;
   if (finished) clearAuto();
+  document.querySelectorAll(".battle, .draw").forEach((n) => n.remove());
   $("#game").hidden = true;
   $("#title").hidden = false;
+  playMusic("主题");
   const saves = loadSaves();
   const cont = $<HTMLButtonElement>("#btn-continue");
   cont.hidden = !saves.auto;
-  if (saves.auto) cont.textContent = `继续 · ${saves.auto.chapter ?? ""}`;
+  if (saves.auto) cont.querySelector("span")!.textContent = `继续 · ${saves.auto.chapter ?? ""}`;
+  $("#btn-load").hidden = !saves.slots.some(Boolean) && !Object.keys(saves.checkpoints ?? {}).length;
 }
 
 function boot() {
@@ -129,17 +221,28 @@ function boot() {
   $("#title-art").innerHTML = renderScene("归山", "dawn");
   $("#version").textContent = `原型 ${__BUILD__}`;
   $("#btn-new").addEventListener("click", async () => {
+    unlockAudio();
     const name = await askName();
     startFrom(newState(name, START));
   });
   $("#btn-continue").addEventListener("click", () => {
+    unlockAudio();
     const s = loadSaves().auto;
     if (s) startFrom(structuredClone(s));
   });
+  $("#btn-load").addEventListener("click", () => {
+    unlockAudio();
+    sheet("读档", el("div", {}, slotList("load")), [["章节回溯", () => showCheckpoints()]]);
+  });
+  $("#btn-settings").addEventListener("click", showSettings);
   $("#btn-debug").addEventListener("click", showDebug);
   $("#btn-journal").addEventListener("click", (e) => { e.stopPropagation(); showJournal(); });
   $("#btn-menu").addEventListener("click", (e) => { e.stopPropagation(); showMenu(); });
+  // 标题页第一次触摸时开始播放音乐（iOS 要求）
+  document.addEventListener("pointerdown", () => { unlockAudio(); if (!$("#title").hidden) playMusic("主题"); }, { once: true });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && engine) writeSaves(loadSaves()); });
   toTitle();
 }
 
+void stopMusic;
 boot();

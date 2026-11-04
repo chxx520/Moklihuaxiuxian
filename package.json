@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "esbuild": "0.24.2",
+    "sharp": "^0.33.5",
     "subset-font": "^2.4.0",
     "typescript": "5.7.3"
   }

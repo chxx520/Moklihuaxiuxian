@@ -3,6 +3,7 @@
 import * as esbuild from "esbuild";
 import { readFileSync, readdirSync, mkdirSync, copyFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import subsetFont from "subset-font";
+import sharp from "sharp";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 
@@ -18,6 +19,48 @@ function storyFiles() {
   }
   return files;
 }
+
+// 素材：assets/ 下的图片转成 webp（限制尺寸），音乐原样复制；生成清单供游戏查找
+const ASSET_KINDS = ["characters", "scenes", "cg", "enemies", "items", "music"];
+async function buildAssets(outDir) {
+  const list = [];
+  const cacheDir = join(root, ".cache/assets");
+  for (const kind of ASSET_KINDS) {
+    const dir = join(root, "assets", kind);
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      const src = join(dir, f);
+      if (f.startsWith(".") || f.toLowerCase() === "readme.md" || statSync(src).isDirectory()) continue;
+      const isImg = /\.(png|jpe?g|webp)$/i.test(f);
+      const isAudio = /\.(mp3|m4a|ogg)$/i.test(f);
+      if (!isImg && !isAudio) continue;
+      const outName = isImg ? f.replace(/\.(png|jpe?g|webp)$/i, ".webp") : f;
+      const rel = `${kind}/${outName}`;
+      list.push(rel);
+      if (!outDir) continue;
+      const dest = join(outDir, "assets", rel);
+      mkdirSync(join(outDir, "assets", kind), { recursive: true });
+      if (isAudio) { copyFileSync(src, dest); continue; }
+      const st = statSync(src);
+      const cached = join(cacheDir, `${kind}__${outName}.${st.size}.${Math.floor(st.mtimeMs)}`);
+      if (!existsSync(cached)) {
+        mkdirSync(cacheDir, { recursive: true });
+        const maxH = kind === "items" ? 600 : 1600;
+        await sharp(src).resize({ height: maxH, withoutEnlargement: true }).webp({ quality: 84, alphaQuality: 90 }).toFile(cached);
+      }
+      copyFileSync(cached, dest);
+    }
+  }
+  return list;
+}
+
+const assetPlugin = (list) => ({
+  name: "assets",
+  setup(build) {
+    build.onResolve({ filter: /^virtual:assets$/ }, () => ({ path: "assets", namespace: "assets" }));
+    build.onLoad({ filter: /.*/, namespace: "assets" }, () => ({ contents: `export default ${JSON.stringify(list)};`, loader: "js" }));
+  },
+});
 
 const storyPlugin = {
   name: "story",
@@ -57,6 +100,7 @@ let rev = "dev";
 try { rev = execSync("git rev-parse --short HEAD", { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch {}
 const stamp = new Date().toISOString().slice(0, 10);
 mkdirSync(out, { recursive: true });
+const assetList = await buildAssets(out);
 await esbuild.build({
   entryPoints: [join(root, "src/main.ts")],
   bundle: true,
@@ -66,12 +110,13 @@ await esbuild.build({
   sourcemap: false,
   outfile: join(out, "game.js"),
   define: { __BUILD__: JSON.stringify(`${stamp} · ${rev}`) },
-  plugins: [storyPlugin],
+  plugins: [storyPlugin, assetPlugin(assetList)],
   logLevel: "warning",
 });
 copyDir(join(root, "web"), out);
 await buildFonts();
 writeFileSync(join(out, "build.txt"), `${stamp} ${rev}\n`);
+console.log(`素材：${assetList.length} 个`);
 console.log("已输出到 dist/www");
 
 function copyDir(from, to) {

@@ -1,0 +1,163 @@
+{
+  "_说明": "挑战数据。kind: defeat 全部击退 / ritual 完成仪式 / break 打破屏障。敌人 pattern 按顺序循环：attack:目标:伤害（目标 player/ally/object）、hide 潜入暗处、summon:图鉴名 召唤、pulse:伤害 波及所有人、wait 等待。",
+
+  "bestiary": {
+    "饥影": { "name": "饥影", "hp": 4, "pattern": ["attack:player:2", "attack:player:2", "hide"], "art": "饥影" },
+    "饥影·伏": { "name": "饥影", "hp": 4, "hidden": true, "pattern": ["attack:player:3", "hide"], "art": "饥影" },
+    "饥影·噬门": { "name": "饥影", "hp": 4, "pattern": ["attack:object:2", "attack:player:2", "hide"], "art": "饥影" },
+    "饥影·扑人": { "name": "饥影", "hp": 4, "pattern": ["attack:ally:2", "attack:ally:3", "hide"], "art": "饥影" },
+    "饥影·小": { "name": "饥影", "hp": 3, "pattern": ["attack:player:2", "attack:ally:2"], "art": "饥影" },
+    "饥影·噬镜": { "name": "饥影", "hp": 4, "pattern": ["attack:object:2", "hide", "attack:player:2"], "art": "饥影" }
+  },
+
+  "battles": {
+    "b1": {
+      "title": "夜叩",
+      "goal": "击退门里漏出来的饥影",
+      "kind": "defeat",
+      "hp": 12,
+      "paper": 2,
+      "enemies": ["饥影", "饥影·伏"],
+      "spawns": { "3": ["饥影·小"] },
+      "tips": {
+        "1": "敌人头顶写着它下一步要做什么。先点「驱邪符」，再点一个敌人。\n有一个饥影藏在暗处，看不见就打不到——试试「明灯符」。",
+        "2": "灵力每回合恢复 3 点，用不完不会留到下回合。\n看到「扑向你」时，可以先用「护身符」挡一下。",
+        "3": "又来了一个。别急，看清它们要做什么再出手。"
+      }
+    },
+
+    "b2_repair": {
+      "title": "补符守门",
+      "goal": "在旧门被啃穿之前，补全护符（4 笔）",
+      "kind": "ritual",
+      "hp": 14,
+      "paper": 2,
+      "turns": 6,
+      "object": { "name": "旧门", "hp": 8 },
+      "ritual": { "name": "补全护符", "target": 4, "actions": [{ "name": "落笔", "cost": 1, "progress": 1, "perTurn": 2, "desc": "照内符纹样补一笔。每回合最多两笔。" }] },
+      "enemies": ["饥影·噬门", "饥影"],
+      "spawns": { "2": ["饥影·噬门"], "4": ["饥影·伏"] },
+      "tips": { "1": "灵力既要用来落笔，也要用来护门。旧门被啃穿就前功尽弃。" }
+    },
+
+    "b2_soothe": {
+      "title": "诵名送食",
+      "goal": "护住小满，让她念完六十年前那些人的名字（4 回合不受伤）",
+      "kind": "ritual",
+      "hp": 14,
+      "paper": 2,
+      "turns": 8,
+      "ally": { "name": "小满", "hp": 6 },
+      "ritual": { "name": "诵名", "target": 4, "auto": "allyUnharmed" },
+      "enemies": ["饥影·扑人", "饥影"],
+      "spawns": { "3": ["饥影·扑人"], "5": ["饥影·小"] },
+      "tips": { "1": "小满每平安度过一回合，仪式就前进一步。\n击退敌人不是目的——别让她受伤。", "2": "定身符能让一个敌人这回合什么也做不了。" }
+    },
+
+    "b2_break": {
+      "title": "强破",
+      "goal": "五回合内打破封门的煞气",
+      "kind": "break",
+      "hp": 14,
+      "paper": 4,
+      "turns": 5,
+      "object": { "name": "铜镜", "hp": 4, "breakable": true },
+      "barrier": 0,
+      "enemies": [{ "name": "封门煞气", "hp": 16, "pattern": ["pulse:2", "summon:饥影·噬镜", "pulse:1"], "art": "屏障" }],
+      "tips": { "1": "破煞符威力大，但煞气会波及铜镜。\n用护身符护住铜镜能保住它——代价是打得更慢。" }
+    },
+
+    "b3_keep": {
+      "title": "重镇旧门",
+      "goal": "看清饥祟的心结，重新镇住它（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "ritual": { "name": "重镇", "target": 6, "knot": true, "actions": [
+        { "name": "落笔", "cost": 1, "progress": 2, "perTurn": 1, "desc": "补上新的镇符。" },
+        { "name": "镇灵", "cost": 1, "progress": 2, "perTurn": 1, "desc": "压住它躁动的魂。" },
+        { "name": "安门", "cost": 1, "progress": 2, "perTurn": 1, "desc": "稳住门与镜的气脉。" }
+      ] },
+      "enemies": [{ "name": "饥祟", "hp": 99, "immune": true, "pattern": ["attack:player:2", "summon:饥影", "attack:player:3", "pulse:1"], "art": "饥祟" }],
+      "tips": { "1": "饥祟杀不死。每回合它都有一个「心结」，只有对上心结的做法才有用。\n辨气术能看见心结。" }
+    },
+    "b3_renew": {
+      "title": "迁镜",
+      "goal": "护住铜镜，把封印一点点移出旧门（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "object": { "name": "铜镜", "hp": 7 },
+      "ritual": { "name": "迁镜", "target": 6, "knot": true, "actions": [
+        { "name": "移镜", "cost": 1, "progress": 2, "perTurn": 1, "desc": "把铜镜从门楣上松开一分。" },
+        { "name": "安魂", "cost": 1, "progress": 2, "perTurn": 1, "desc": "安抚镜中的温晚。" },
+        { "name": "引祟", "cost": 1, "progress": 2, "perTurn": 1, "desc": "引着饥祟跟镜子一起走。" }
+      ] },
+      "enemies": [{ "name": "饥祟", "hp": 99, "immune": true, "pattern": ["attack:object:2", "summon:饥影·噬镜", "attack:player:3", "attack:object:2"], "art": "饥祟" }],
+      "tips": { "1": "饥祟不肯离开，会去撞铜镜。\n用辨气术看它的心结，同时别忘了护镜。" }
+    },
+    "b3_end": {
+      "title": "送行",
+      "goal": "读懂饥祟的心结，送它们走（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "ritual": { "name": "送行", "target": 6, "knot": true, "actions": [
+        { "name": "供食", "cost": 1, "progress": 2, "perTurn": 1, "desc": "把麦饼与新米供上。" },
+        { "name": "诵名", "cost": 1, "progress": 2, "perTurn": 1, "desc": "念出那些人的名字。" },
+        { "name": "引路", "cost": 1, "progress": 2, "perTurn": 1, "desc": "用明灯为它们照出去的路。" }
+      ] },
+      "enemies": [{ "name": "饥祟", "hp": 99, "immune": true, "pattern": ["attack:player:3", "summon:饥影", "pulse:2", "attack:player:2"], "art": "饥祟" }],
+      "tips": { "1": "它们不是想害人，只是饿。\n每回合用辨气术看清它此刻最想要什么。" }
+    },
+    "b3_keep_x": {
+      "title": "压田",
+      "goal": "看清田中饥气的心结，把它重新压下去（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "ritual": { "name": "压制", "target": 6, "knot": true, "actions": [
+        { "name": "落符", "cost": 1, "progress": 2, "perTurn": 1, "desc": "在田埂上落下镇符。" },
+        { "name": "压气", "cost": 1, "progress": 2, "perTurn": 1, "desc": "把散开的饥气压回地下。" },
+        { "name": "净土", "cost": 1, "progress": 2, "perTurn": 1, "desc": "洗去土里的灰气。" }
+      ] },
+      "enemies": [{ "name": "田中饥气", "hp": 99, "immune": true, "pattern": ["attack:player:2", "summon:饥影", "pulse:2"], "art": "饥祟" }],
+      "tips": { "1": "饥气散在土里，打不散。辨气术能看出它此刻聚在哪里。" }
+    },
+    "b3_renew_x": {
+      "title": "传符",
+      "goal": "护住阿禾，让她亲手画完第一道护田符（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "ally": { "name": "阿禾", "hp": 7 },
+      "ritual": { "name": "传符", "target": 6, "knot": true, "actions": [
+        { "name": "扶笔", "cost": 1, "progress": 2, "perTurn": 1, "desc": "握着她的手走一笔。" },
+        { "name": "提点", "cost": 1, "progress": 2, "perTurn": 1, "desc": "告诉她哪里要停、哪里要收。" },
+        { "name": "放手", "cost": 1, "progress": 2, "perTurn": 1, "desc": "让她自己画。" }
+      ] },
+      "enemies": [{ "name": "田中饥气", "hp": 99, "immune": true, "pattern": ["attack:ally:2", "summon:饥影·小", "attack:player:2", "attack:ally:2"], "art": "饥祟" }],
+      "tips": { "1": "阿禾每一笔要的帮助不一样。用辨气术看清她此刻的气，再决定怎么教。" }
+    },
+    "b3_end_x": {
+      "title": "追源",
+      "goal": "顺着第三人的气息，找到饥气的源头并斩断（进度 6）",
+      "kind": "ritual",
+      "hp": 16,
+      "paper": 3,
+      "turns": 8,
+      "ritual": { "name": "追源", "target": 6, "knot": true, "actions": [
+        { "name": "循气", "cost": 1, "progress": 2, "perTurn": 1, "desc": "顺着冰冷的气息往下找。" },
+        { "name": "掘符", "cost": 1, "progress": 2, "perTurn": 1, "desc": "挖出埋在土里的旧符。" },
+        { "name": "断脉", "cost": 1, "progress": 2, "perTurn": 1, "desc": "切断它和地脉的牵连。" }
+      ] },
+      "enemies": [{ "name": "田中饥气", "hp": 99, "immune": true, "pattern": ["attack:player:3", "summon:饥影", "pulse:2", "attack:player:2"], "art": "饥祟" }],
+      "tips": { "1": "那股冰冷的气息时隐时现。辨气术能看出它此刻藏在哪一层。" }
+    }
+  }
+}

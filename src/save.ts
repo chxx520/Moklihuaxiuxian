@@ -6,6 +6,11 @@ export type SaveFile = {
   version: 1;
   auto?: GameState;
   slots: (GameState | null)[];
+  /** 关键选择前自动保留的存档，按标签 */
+  checkpoints?: Record<string, GameState>;
+  settings?: { music: number; sfx: number; textSpeed: number };
+  /** 试玩日志：[时间戳, 类型, 内容] */
+  log?: [number, string, string][];
 };
 
 declare global {
@@ -57,5 +62,43 @@ export function autosave(state: GameState) {
 export function clearAuto() {
   const f = loadSaves();
   delete f.auto;
+  writeSaves(f);
+}
+
+export function saveSlot(i: number, state: GameState | null) {
+  const f = loadSaves();
+  f.slots[i] = state ? structuredClone(state) : null;
+  writeSaves(f);
+}
+
+export function saveCheckpoint(label: string, state: GameState) {
+  const f = loadSaves();
+  f.checkpoints = { ...f.checkpoints, [label]: structuredClone(state) };
+  writeSaves(f);
+}
+
+export function getSettings() {
+  return { music: 0.7, sfx: 0.8, textSpeed: 30, ...loadSaves().settings };
+}
+
+export function setSettings(s: Partial<ReturnType<typeof getSettings>>) {
+  const f = loadSaves();
+  f.settings = { ...getSettings(), ...s };
+  writeSaves(f);
+}
+
+let logDirty = 0;
+export function logEvent(type: string, text: string) {
+  const f = loadSaves();
+  const log = (f.log ??= []);
+  log.push([Date.now(), type, text]);
+  if (log.length > 3000) log.splice(0, log.length - 3000);
+  // 日志随自动存档一起写；这里每 10 条额外落盘一次
+  if (++logDirty % 10 === 0) writeSaves(f);
+}
+
+export function clearLog() {
+  const f = loadSaves();
+  f.log = [];
   writeSaves(f);
 }

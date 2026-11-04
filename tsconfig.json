@@ -6,7 +6,8 @@
     "strict": true,
     "noEmit": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["src"]
 }

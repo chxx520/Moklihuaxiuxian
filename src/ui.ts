@@ -1,6 +1,12 @@
 // 界面层：实现 Presenter，负责把剧情显示到屏幕上并等待玩家操作。
-import { hasFigure, isMood, MOODS, renderFigure, renderScene } from "./art";
-import type { Presenter } from "./engine";
+import { figureHtml, hasPortrait, isMood, MOODS, sceneHtml } from "./art";
+import { findAsset } from "./assets";
+import { playMusic, sfx, unlockAudio } from "./audio";
+import { runBattle } from "./battle";
+import { runDraw } from "./draw";
+import type { GameState, MenuItem, Presenter } from "./engine";
+import type { Value } from "./parser";
+import { getSettings } from "./save";
 
 export const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) =>
   root.querySelector(sel) as T;
@@ -38,6 +44,7 @@ export class DomPresenter implements Presenter {
 
   constructor() {
     const tap = () => {
+      unlockAudio();
       if (this.typing) {
         this.typing.finish();
         this.skipped++;
@@ -46,6 +53,7 @@ export class DomPresenter implements Presenter {
       if (this.advance) {
         const a = this.advance;
         this.advance = null;
+        sfx("tap");
         a();
       }
     };
@@ -56,15 +64,15 @@ export class DomPresenter implements Presenter {
     });
   }
 
-  scene(name: string, sub?: string, mood?: string, variant?: string) {
+  scene(name: string, sub?: string, mood?: string, variant?: string, image?: string) {
     const m = isMood(mood) ? mood : "day";
-    const key = `${name}|${m}|${variant ?? ""}`;
+    const key = `${name}|${m}|${variant ?? ""}|${image ?? ""}`;
     if (key === this.sceneKey) return;
     const samePlace = this.sceneKey.startsWith(name + "|");
     this.sceneKey = key;
 
     const layer = el("div", { class: "layer" });
-    layer.innerHTML = renderScene(name, m, variant);
+    layer.innerHTML = sceneHtml(name, m, variant ?? "", image);
     this.art.append(layer);
     requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add("in")));
     const old = [...this.art.children].slice(0, -1);
@@ -87,15 +95,15 @@ export class DomPresenter implements Presenter {
     this.chapterEl.textContent = text;
   }
 
-  private showFigure(name: string) {
-    if (name === this.figureName) return;
-    this.figureName = name;
+  private showFigure(portrait: string) {
+    if (portrait === this.figureName) return;
+    this.figureName = portrait;
     const old = [...this.figure.children];
     old.forEach((o) => o.classList.remove("in"));
     setTimeout(() => old.forEach((o) => o.remove()), 450);
-    if (!name || !hasFigure(name)) return;
+    if (!portrait || !hasPortrait(portrait)) return;
     const f = el("div", { class: "fig" });
-    f.innerHTML = renderFigure(name);
+    f.innerHTML = figureHtml(portrait);
     this.figure.append(f);
     requestAnimationFrame(() => requestAnimationFrame(() => f.classList.add("in")));
   }
@@ -110,7 +118,7 @@ export class DomPresenter implements Presenter {
     this.showFigure("");
   }
 
-  line(kind: "narration" | "dialogue" | "system", text: string, speaker?: string): Promise<void> {
+  line(kind: "narration" | "dialogue" | "system", text: string, speaker?: string, portrait?: string): Promise<void> {
     if (this.typing) clearInterval(this.typing.timer);
     this.typing = null;
     this.advance = null;
@@ -118,8 +126,8 @@ export class DomPresenter implements Presenter {
     this.panel.dataset.kind = kind;
     this.speaker.textContent = speaker ?? "";
     this.speaker.hidden = !speaker;
-    const hasFig = !!speaker && hasFigure(speaker);
-    if (hasFig) this.showFigure(speaker!);
+    const hasFig = !!portrait && hasPortrait(portrait);
+    if (hasFig) this.showFigure(portrait!);
     this.figure.classList.toggle("idle", !hasFig);
 
     return new Promise((resolve) => {
@@ -138,21 +146,24 @@ export class DomPresenter implements Presenter {
         i += 1;
         this.text.textContent = chars.slice(0, i).join("");
         if (i >= chars.length) done();
-      }, 30);
+      }, getSettings().textSpeed);
       this.typing = { finish: done, timer };
     });
   }
 
-  private buttons(items: { label: string; cls?: string }[]): Promise<number> {
+  private buttons(items: { label: string; cls?: string; locked?: string }[]): Promise<number> {
     this.panel.classList.remove("ready");
     this.advance = null;
     return new Promise((resolve) => {
       this.choices.replaceChildren(
         ...items.map((it, i) => {
-          const b = el("button", { class: `choice ${it.cls ?? ""}` }, el("span", {}, it.label));
+          const b = el("button", { class: `choice ${it.cls ?? ""} ${it.locked ? "locked" : ""}` }, el("span", {}, it.label),
+            ...(it.locked ? [el("small", {}, it.locked)] : []));
           b.style.animationDelay = `${i * 70}ms`;
           b.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (it.locked) { sfx("miss"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); return; }
+            sfx("page");
             this.choices.replaceChildren();
             resolve(i);
           });
@@ -162,9 +173,63 @@ export class DomPresenter implements Presenter {
     });
   }
 
-  menu(options: string[]) {
+  menu(options: MenuItem[]) {
     this.figure.classList.add("idle");
-    return this.buttons(options.map((label) => ({ label })));
+    return this.buttons(options.map((o) => ({ label: o.text, locked: o.locked })));
+  }
+
+  async cmd(name: string, arg: string, state: GameState): Promise<Record<string, Value> | void> {
+    switch (name) {
+      case "music":
+        playMusic(arg);
+        return;
+      case "sfx":
+        sfx(arg);
+        return;
+      case "pause":
+        await new Promise((r) => setTimeout(r, Number(arg) || 800));
+        return;
+      case "card":
+        return this.card(arg);
+      case "cg":
+        return this.cg(arg);
+      case "draw":
+        this.reset();
+        return runDraw(arg);
+      case "battle": {
+        this.reset();
+        const prev = state.music;
+        playMusic("挑战");
+        const r = await runBattle(arg, state.spells);
+        if (prev) playMusic(prev);
+        return { [`${arg}.win`]: r.win, [`${arg}.objectHp`]: r.objectHp, [`${arg}.allyHurt`]: r.allyHurt, [`${arg}.turns`]: r.turns, [`${arg}.retries`]: r.retries, [`${arg}.broke`]: r.broke };
+      }
+    }
+  }
+
+  /** 时间跳转等全屏字卡 */
+  private card(text: string) {
+    return new Promise<void>((resolve) => {
+      const c = el("div", { class: "time-card" }, el("div", { class: "tc-text" }, text), el("div", { class: "tc-hint" }, "轻触继续"));
+      document.body.append(c);
+      sfx("bell");
+      setTimeout(() => c.addEventListener("click", () => { c.classList.add("out"); setTimeout(() => c.remove(), 700); resolve(); }), 900);
+    });
+  }
+
+  /** 插画：有图显示图，没有就显示一张水墨标题卡 */
+  private cg(arg: string) {
+    const [key, caption] = arg.split("|").map((s) => s.trim());
+    return new Promise<void>((resolve) => {
+      const img = findAsset("cg", key);
+      const c = el("div", { class: "cg" });
+      if (img) c.append(el("img", { src: img, alt: "" }));
+      else c.append(el("div", { class: "cg-ph" }, el("span", { class: "cg-ph-title" }, key), el("span", { class: "seal" }, "插画")));
+      if (caption) c.append(el("div", { class: "cg-cap" }, caption));
+      document.body.append(c);
+      sfx("page");
+      setTimeout(() => c.addEventListener("click", () => { c.classList.add("out"); setTimeout(() => c.remove(), 600); resolve(); }), 700);
+    });
   }
 
   hub(spots: { text: string; seen: boolean; exit: boolean }[]) {
