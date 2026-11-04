@@ -141,3 +141,11 @@
 .topbar { flex-wrap: nowrap; }
 .skin-按钮_青玉 .pill { white-space: nowrap; min-width: 92px; flex: none; }
 .skin-牌匾 #chapter { white-space: nowrap; max-width: 58vw; overflow: hidden; text-overflow: ellipsis; display: inline-block; line-height: 24px; font-size: 11px; letter-spacing: 0; border-width: 5px 26px !important; border-image-width: 5px 26px !important; }
+
+/* 舆图：地图、信息框、收起按钮依次排开，绝不重叠（之前「收起舆图」压在「前往」上） */
+.map-screen { overflow-y: auto; justify-content: flex-start; }
+.map-screen > * { flex: none; }
+.skin-舆图框 .map-board { height: min(52vh, calc((100vw - 20px) * 2048 / 1152)) !important; width: min(calc(100vw - 20px), calc(52vh * 1152 / 2048)) !important; }
+.map-info { min-height: 0 !important; }
+.map-info .choice { margin-top: 4px; }
+.map-close { margin-top: 2px; }
