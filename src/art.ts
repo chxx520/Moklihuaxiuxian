@@ -1,4 +1,4 @@
-import { findAsset } from "./assets";
+import { findAsset, findAssetPrefix } from "./assets";
 // 水墨风占位美术：用代码生成场景（远山、雾、宣纸纹理、前景器物）和人物剪影。
 // 正式美术到位后，只需要把 renderScene / renderFigure 换成图片即可。
 
@@ -431,9 +431,17 @@ function enemyArtRaw(name: string): string {
 }
 
 /** 场景：有插画用插画，否则用代码生成的水墨图 */
+/** 同一地点的任意一张插画（找不到对应季节、时辰时，用它再加色调滤镜） */
+function anySceneOf(name: string): string | null {
+  return findAsset("scenes", name) || findAssetPrefix("scenes", `${name}_`);
+}
+
 export function sceneHtml(name: string, mood: Mood, variant: string, image?: string): string {
-  const img = (image && findAsset("scenes", image)) || findAsset("scenes", name, name + "_");
-  if (img) return `<img class="scene-img" src="${img}" alt="" decoding="async"><div class="mist-overlay"></div>${mistLayer(mood)}`;
+  const exact = (image && findAsset("scenes", image)) || null;
+  const img = exact || anySceneOf(name);
+  // 借用别的季节时，按时辰调色：夜里压暗偏蓝、雪天去色提亮、春天偏青、黄昏偏暖
+  const tint = exact ? "" : mood === "night" ? "tint-night" : mood === "snow" ? "tint-snow" : mood === "spring" ? "tint-spring" : mood === "dusk" ? "tint-dusk" : "";
+  if (img) return `<img class="scene-img ${tint}" src="${img}" alt="" decoding="async"><div class="mist-overlay"></div>${mistLayer(mood)}`;
   return sceneCache(name, mood, variant) + mistLayer(mood);
 }
 
@@ -461,15 +469,32 @@ function figureScale(key: string) {
 }
 
 /** 立绘：portrait 形如「温小满_8岁#笑」。有图用图，否则用剪影。 */
-export function figureHtml(portrait: string): string {
+/** 成年后样貌变化不大的人物：缺某个年龄的立绘时，可以借用同一人物的其他立绘 */
+const SAME_FACE = ["陆青棠", "顾长庚", "温阿婆", "温晚"];
+
+function portraitAsset(portrait: string): { src: string; key: string } | null {
   const [key, expr] = portrait.split("#");
   const img = findAsset("characters", expr ? `${key}_${expr}` : key, key);
-  if (img) return `<img class="portrait" src="${img}" alt="" decoding="async" style="height:${figureScale(key) * 100}%">`;
+  if (img) return { src: img, key };
+  const base = key.split("_")[0];
+  if (SAME_FACE.includes(base)) {
+    const any = findAsset("characters", base, base);
+    if (any) return { src: any, key: base };
+  }
+  return null;
+}
+
+/** 立绘：portrait 形如「温小满_8岁#笑」。有图用图；没有图时，只有主角显示剪影，其他人物不显示（避免难看的占位） */
+export function figureHtml(portrait: string): string {
+  const a = portraitAsset(portrait);
+  const key = portrait.split("#")[0];
+  if (a) return `<img class="portrait" src="${a.src}" alt="" decoding="async" style="height:${figureScale(key) * 100}%">`;
+  if (!key.startsWith("主角")) return "";
   const fig = renderFigure(key.split("_")[0]);
   return fig ? svgImg(fig, "fig-svg") : "";
 }
 
 export function hasPortrait(portrait: string) {
   const key = portrait.split("#")[0];
-  return !!findAsset("characters", key, key) || hasFigure(key.split("_")[0]);
+  return !!portraitAsset(portrait) || (key.startsWith("主角") && hasFigure("主角"));
 }

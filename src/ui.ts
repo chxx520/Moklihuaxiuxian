@@ -111,6 +111,7 @@ export class DomPresenter implements Presenter {
     const f = el("div", { class: "fig" });
     f.innerHTML = figureHtml(portrait);
     this.figure.append(f);
+    this.live?.stop();
     const img = f.querySelector("img.portrait") as HTMLImageElement | null;
     // 孩子和老人摆动小一些，年轻人衣袂飘得多一些
     const key = portrait.split("#")[0];

@@ -122,3 +122,22 @@
 
 /* 套了手绘皮肤的按钮，不再画代码版的左侧红条 */
 .skin-选项 .choice::before, .skin-按钮_青玉 .sheet-actions .choice::before, .skin-按钮_青玉 .map-close::before, .skin-按钮_青玉 .cr-reroll::before { display: none !important; }
+
+/* 借用其他季节插画时的调色 */
+.scene-img.tint-night { filter: brightness(0.55) saturate(0.7) hue-rotate(195deg) contrast(1.05); }
+.scene-img.tint-snow { filter: saturate(0.25) brightness(1.12) contrast(0.92); }
+.scene-img.tint-spring { filter: hue-rotate(52deg) saturate(0.85) brightness(1.06); }
+.scene-img.tint-dusk { filter: sepia(0.25) saturate(1.1) brightness(0.95); }
+
+/* 对话框高度随内容，不再空一大块 */
+.skin-对话框 #panel { min-height: 0 !important; }
+.skin-对话框 #text { min-height: 2.2em; }
+
+/* 右上角小按钮：青玉 */
+.skin-按钮_青玉 .pill { background: none !important; box-shadow: none !important; border-style: solid !important; border-color: transparent !important;
+  border-width: 7px 30px !important; border-image: var(--ui-btn-jade) 44 230 fill / 7px 30px stretch !important; min-height: 40px; padding: 0 2px !important;
+  color: #f4fff8 !important; text-shadow: 0 1px 2px rgba(10,40,34,0.9); font-size: 13px; }
+
+.topbar { flex-wrap: nowrap; }
+.skin-按钮_青玉 .pill { white-space: nowrap; min-width: 92px; flex: none; }
+.skin-牌匾 #chapter { white-space: nowrap; max-width: 58vw; overflow: hidden; text-overflow: ellipsis; display: inline-block; line-height: 24px; font-size: 11px; letter-spacing: 0; border-width: 5px 26px !important; border-image-width: 5px 26px !important; }

@@ -51,6 +51,7 @@ type Live = {
   leanTarget: number;
   uni: Record<string, WebGLUniformLocation | null>;
   alive: boolean;
+  img?: HTMLImageElement;
 };
 
 const lives = new Set<Live>();
@@ -60,9 +61,9 @@ let raf = 0;
 function release(l: Live) {
   lives.delete(l);
   l.alive = false;
+  // 还在屏幕上（比如正在淡出）：先换回静态图，再释放，避免留下乱色画布
+  if (l.canvas.isConnected && l.img) l.canvas.replaceWith(l.img);
   try { l.gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch { /* 忽略 */ }
-  l.canvas.width = 1;
-  l.canvas.height = 1;
 }
 
 function loop(t: number) {
@@ -166,7 +167,9 @@ export function animatePortrait(img: HTMLImageElement, opts: { sway?: number; br
     kick();
   };
 
-  const live: Live = { canvas, gl, prog: null as any, count: 0, seed: Math.random() * 100, lean: 0, leanTarget: 0, uni: {}, alive: true };
+  const live: Live = { canvas, gl, prog: null as any, count: 0, seed: Math.random() * 100, lean: 0, leanTarget: 0, uni: {}, alive: true, img };
+  // 系统回收了绘图环境：立刻换回静态立绘
+  canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); live.alive = false; lives.delete(live); if (canvas.isConnected) canvas.replaceWith(img); });
   const ready = () => { try { start(); } catch (e) { console.warn("动态立绘不可用", e); } };
   if (img.complete && img.naturalWidth) requestAnimationFrame(ready);
   else img.addEventListener("load", () => requestAnimationFrame(ready), { once: true });

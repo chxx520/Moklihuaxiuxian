@@ -29,3 +29,9 @@ export function findAsset(kind: string, key: string, floor = key): string | null
 export function assetCount() {
   return files.length;
 }
+
+/** 按前缀找第一个素材（例如「槐荫村口_」找到「槐荫村口_秋黄昏」） */
+export function findAssetPrefix(kind: string, prefix: string): string | null {
+  for (const [k, v] of index) if (k.startsWith(`${kind}/${prefix}`)) return v;
+  return null;
+}
