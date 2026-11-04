@@ -1,11 +1,11 @@
 // 入口：标题画面、新游戏、继续、存读档、章节回溯、旧事录、设置、试玩日志、调试面板。
-import { renderScene } from "./art";
+import { titleHtml } from "./art";
 import { assetCount } from "./assets";
 import { applyVolume, playMusic, stopMusic, unlockAudio } from "./audio";
 import { battleIds } from "./battle";
 import { Engine, GameState, newState } from "./engine";
 import { lintStory, parseStory, parseValue } from "./parser";
-import { clearAuto, clearLog, getSettings, loadSaves, logEvent, saveSlot, setSettings, writeSaves } from "./save";
+import { clearAuto, clearLog, flushSaves, getSettings, loadSaves, logEvent, saveSlot, setSettings } from "./save";
 import { SPELLS, SPELL_ORDER } from "./spells";
 import { $, DomPresenter, el } from "./ui";
 // @ts-ignore 由构建脚本注入：{ 文件名: 剧本文本 }
@@ -218,7 +218,7 @@ function toTitle(finished = false) {
 
 function boot() {
   presenter = new DomPresenter();
-  $("#title-art").innerHTML = renderScene("归山", "dawn");
+  $("#title-art").innerHTML = titleHtml();
   $("#version").textContent = `原型 ${__BUILD__}`;
   $("#btn-new").addEventListener("click", async () => {
     unlockAudio();
@@ -240,7 +240,8 @@ function boot() {
   $("#btn-menu").addEventListener("click", (e) => { e.stopPropagation(); showMenu(); });
   // 标题页第一次触摸时开始播放音乐（iOS 要求）
   document.addEventListener("pointerdown", () => { unlockAudio(); if (!$("#title").hidden) playMusic("主题"); }, { once: true });
-  document.addEventListener("visibilitychange", () => { if (document.hidden && engine) writeSaves(loadSaves()); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) flushSaves(); });
+  window.addEventListener("pagehide", () => flushSaves());
   toTitle();
 }
 

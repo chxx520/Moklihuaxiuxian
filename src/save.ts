@@ -42,9 +42,19 @@ export function loadSaves(): SaveFile {
   return cache;
 }
 
+let flushTimer = 0;
+/** 存档改为合并写入：短时间内多次修改只落盘一次，不阻塞点击和动画 */
 export function writeSaves(file: SaveFile) {
   cache = file;
-  const json = JSON.stringify(file);
+  if (flushTimer) return;
+  flushTimer = window.setTimeout(flushSaves, 400);
+}
+
+export function flushSaves() {
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = 0;
+  if (!cache) return;
+  const json = JSON.stringify(cache);
   window.webkit?.messageHandlers?.store?.postMessage(json);
   try {
     localStorage.setItem(KEY, json);
@@ -95,6 +105,7 @@ export function logEvent(type: string, text: string) {
   if (log.length > 3000) log.splice(0, log.length - 3000);
   // 日志随自动存档一起写；这里每 10 条额外落盘一次
   if (++logDirty % 10 === 0) writeSaves(f);
+  void logDirty;
 }
 
 export function clearLog() {

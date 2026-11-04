@@ -66,7 +66,7 @@ h1 { writing-mode: vertical-rl; font-size: 76px; font-weight: 600; letter-spacin
 #game[data-dark="true"] .topbar { color: #c9c2b2; }
 .spacer { flex: 1; }
 .pill { background: rgba(243,236,220,0.72); border: 1px solid var(--line); border-radius: 999px; color: var(--ink);
-  padding: 6px 14px; font-size: 14px; min-height: 36px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  padding: 6px 14px; font-size: 14px; min-height: 36px; }
 
 #inscription { position: absolute; top: calc(var(--safe-top) + 60px); right: 22px; writing-mode: vertical-rl;
   display: flex; flex-direction: column; align-items: flex-start; gap: 10px; opacity: 0; z-index: 2; }
@@ -109,8 +109,8 @@ h1 { writing-mode: vertical-rl; font-size: 76px; font-weight: 600; letter-spacin
   background: linear-gradient(180deg, #f1e4b9, var(--talisman));
   box-shadow: inset 0 0 0 1px rgba(168,56,44,0.55), inset 0 0 0 4px var(--talisman), inset 0 0 0 5px rgba(168,56,44,0.35), 0 2px 6px rgba(60,40,20,0.15); }
 .choice::before { content: ""; position: absolute; left: 9px; top: 12px; bottom: 12px; width: 2px; background: var(--seal); opacity: 0.6; }
-#choices .choice { animation: rise 0.35s ease both; }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#choices .choice { animation: rise 0.2s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .choice:active { filter: brightness(0.94); transform: scale(0.99); }
 .choice.spot span::before { content: "◇ "; color: var(--seal); }
 .choice.seen { background: #ebe3cc; color: var(--dim); box-shadow: inset 0 0 0 1px var(--line); }
@@ -290,3 +290,24 @@ h1 { writing-mode: vertical-rl; font-size: 76px; font-weight: 600; letter-spacin
 #figure:has(.portrait) { bottom: 14vh; height: 74%; }
 /* 插画场景上的占位剪影：淡一些，避免像一团黑影 */
 #art:has(.scene-img) ~ #figure .fig:not(:has(.portrait)).in { opacity: 0.45; filter: blur(0.4px); }
+
+html { touch-action: manipulation; }
+.scene-svg { position: absolute; left: 0; top: 0; width: 100%; height: calc(100% - 26vh); object-fit: cover; object-position: center bottom; }
+#title-art .scene-svg { height: 100%; }
+.fig-svg { height: 100%; width: auto; }
+.foe-svg { height: 100%; width: auto; }
+.fx-mist { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fx-mist i { position: absolute; left: -30%; width: 160%; height: 90px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,0.55), rgba(255,255,255,0));
+  will-change: transform; animation: drift 26s ease-in-out infinite alternate; }
+.fx-mist.dark i { background: radial-gradient(closest-side, rgba(140,150,160,0.35), rgba(140,150,160,0)); }
+.fx-mist i:nth-child(1) { top: 34%; }
+.fx-mist i:nth-child(2) { top: 46%; animation-duration: 34s; animation-direction: alternate-reverse; }
+.fx-mist i:nth-child(3) { top: 58%; animation-duration: 21s; }
+.fx-snow, .fx-petals { position: absolute; inset: -40px 0 0 0; pointer-events: none; will-change: transform; animation: fall 14s linear infinite;
+  background-image: radial-gradient(2px 2px at 20% 30%, #fff, transparent), radial-gradient(1.5px 1.5px at 60% 10%, #fff, transparent),
+    radial-gradient(2px 2px at 80% 50%, #fff, transparent), radial-gradient(1.5px 1.5px at 35% 70%, #fff, transparent),
+    radial-gradient(2.5px 2.5px at 50% 40%, #fff, transparent), radial-gradient(1.5px 1.5px at 10% 85%, #fff, transparent);
+  background-size: 200px 220px; }
+.fx-petals { background-image: radial-gradient(3px 2px at 20% 30%, #d9a3a0, transparent), radial-gradient(2px 3px at 70% 20%, #d9a3a0, transparent), radial-gradient(3px 2px at 45% 60%, #e2b4b0, transparent);
+  animation: drift 18s ease-in-out infinite alternate; }

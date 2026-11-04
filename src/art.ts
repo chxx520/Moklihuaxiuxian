@@ -73,7 +73,7 @@ function ridge(r: () => number, base: number, amp: number, color: string, opacit
 
 function mist(p: Palette, y: number, i: number) {
   const c = p.dark ? "#8a96a0" : "#ffffff";
-  return `<g class="mist m${i % 3}"><ellipse cx="${W / 2}" cy="${y}" rx="${W * 0.9}" ry="26" fill="${c}" opacity="${p.mist * 0.55}" filter="url(#blur8)"/></g>`;
+  return `<g><ellipse cx="${W / 2}" cy="${y}" rx="${W * 0.9}" ry="26" fill="${c}" opacity="${p.mist * 0.55}" filter="url(#blur8)"/></g>`;
 }
 
 // ———— 前景器物 ————
@@ -167,7 +167,7 @@ function gate(ink: string, state: string) {
       <path d="M50 470 L340 470 L360 496 L30 496 Z" opacity="0.45"/>
     </g>
     <circle cx="195" cy="263" r="15" fill="#b9b3a3" stroke="#5d5444" stroke-width="3"/>
-    <circle cx="195" cy="263" r="22" fill="#e8e0c8" opacity="${state === "glow" ? 0.55 : 0.12}" filter="url(#blur8)" class="${state === "glow" ? "pulse" : ""}"/>
+    <circle cx="195" cy="263" r="22" fill="#e8e0c8" opacity="${state === "glow" ? 0.55 : 0.12}" filter="url(#blur8)" />
     <g transform="rotate(-2 222 360)">
       <rect x="202" y="320" width="40" height="92" fill="${talisman}" opacity="0.95"/>
       <path d="M212 332 q10 6 0 14 q12 4 2 14 M226 330 v40 M218 380 q8 -6 14 2 q-6 8 -14 6" stroke="${blackened ? "#1d1a16" : "#a8443a"}" stroke-width="2.6" fill="none"/>
@@ -299,6 +299,19 @@ const PROPS: Record<string, (ink: string, r: () => number, variant: string) => s
 };
 
 /** 生成完整场景 SVG。variant 用于同一地点的不同状态（如护符破损 / 发黑）。 */
+/** 把 SVG 转成 <img>：浏览器只栅格化一次并缓存，不会每帧重算滤镜 */
+function svgImg(svg: string, cls: string, color = "#1f1b18") {
+  const src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace(/currentColor/g, color));
+  return `<img class="${cls}" src="${src}" alt="" decoding="async">`;
+}
+
+/** 飘动的雾：独立的 CSS 渐变层，只做位移动画（GPU 合成，几乎不耗性能） */
+function mistLayer(mood: Mood) {
+  const p = MOODS[mood];
+  const extra = p.snow ? '<div class="fx-snow"></div>' : p.blossom ? '<div class="fx-petals"></div>' : "";
+  return `<div class="fx-mist ${p.dark ? "dark" : ""}" style="opacity:${p.mist}"><i></i><i></i><i></i></div>${extra}`;
+}
+
 function scope(svg: string, pre: string) {
   return svg.replace(/id="([\w]+)"/g, `id="${pre}$1"`).replace(/url\(#(\w+)\)/g, `url(#${pre}$1)`);
 }
@@ -398,26 +411,49 @@ const FOE: Record<string, string> = {
     <path d="M60 36 v88 M16 80 h88 M30 50 l60 60 M90 50 l-60 60" stroke="#a8443a" stroke-width="2.5" opacity="0.85"/>`,
 };
 
+const foeCache = new Map<string, string>();
 export function enemyArt(name: string): string {
+  const hit = foeCache.get(name);
+  if (hit) return hit;
+  const v = enemyArtRaw(name);
+  foeCache.set(name, v);
+  return v;
+}
+
+function enemyArtRaw(name: string): string {
   const img = findAsset("enemies", name);
   if (img) return `<img src="${img}" alt="">`;
   const body = FOE[name] ?? FOE["饥影"];
-  return scope(`<svg viewBox="-10 0 140 170" xmlns="http://www.w3.org/2000/svg"><defs><filter id="ef"><feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter></defs><g fill="currentColor" color="currentColor" filter="url(#ef)">${body}</g></svg>`, `e${++uid}_`);
+  return svgImg(`<svg viewBox="-10 0 140 170" xmlns="http://www.w3.org/2000/svg"><defs><filter id="ef"><feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter></defs><g fill="currentColor" color="currentColor" filter="url(#ef)">${body}</g></svg>`, "foe-svg", "#1b1715");
 }
 
 /** 场景：有插画用插画，否则用代码生成的水墨图 */
 export function sceneHtml(name: string, mood: Mood, variant: string, image?: string): string {
   const img = (image && findAsset("scenes", image)) || findAsset("scenes", name, name + "_");
-  if (img) return `<img class="scene-img" src="${img}" alt=""><div class="mist-overlay"></div>`;
-  return renderScene(name, mood, variant);
+  if (img) return `<img class="scene-img" src="${img}" alt="" decoding="async"><div class="mist-overlay"></div>${mistLayer(mood)}`;
+  return sceneCache(name, mood, variant) + mistLayer(mood);
+}
+
+const sceneImgCache = new Map<string, string>();
+function sceneCache(name: string, mood: Mood, variant: string) {
+  const k = `${name}|${mood}|${variant}`;
+  let v = sceneImgCache.get(k);
+  if (!v) { v = svgImg(renderScene(name, mood, variant), "scene-svg"); sceneImgCache.set(k, v); }
+  return v;
+}
+
+/** 标题页背景 */
+export function titleHtml() {
+  return sceneCache("归山", "dawn", "") + mistLayer("dawn");
 }
 
 /** 立绘：portrait 形如「温小满_8岁#笑」。有图用图，否则用剪影。 */
 export function figureHtml(portrait: string): string {
   const [key, expr] = portrait.split("#");
   const img = findAsset("characters", expr ? `${key}_${expr}` : key, key);
-  if (img) return `<img class="portrait" src="${img}" alt="">`;
-  return renderFigure(key.split("_")[0]);
+  if (img) return `<img class="portrait" src="${img}" alt="" decoding="async">`;
+  const fig = renderFigure(key.split("_")[0]);
+  return fig ? svgImg(fig, "fig-svg") : "";
 }
 
 export function hasPortrait(portrait: string) {

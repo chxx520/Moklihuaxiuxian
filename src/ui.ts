@@ -159,7 +159,7 @@ export class DomPresenter implements Presenter {
         ...items.map((it, i) => {
           const b = el("button", { class: `choice ${it.cls ?? ""} ${it.locked ? "locked" : ""}` }, el("span", {}, it.label),
             ...(it.locked ? [el("small", {}, it.locked)] : []));
-          b.style.animationDelay = `${i * 70}ms`;
+          b.style.animationDelay = `${i * 35}ms`;
           b.addEventListener("click", (e) => {
             e.stopPropagation();
             if (it.locked) { sfx("miss"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); return; }
@@ -213,7 +213,8 @@ export class DomPresenter implements Presenter {
       const c = el("div", { class: "time-card" }, el("div", { class: "tc-text" }, text), el("div", { class: "tc-hint" }, "轻触继续"));
       document.body.append(c);
       sfx("bell");
-      setTimeout(() => c.addEventListener("click", () => { c.classList.add("out"); setTimeout(() => c.remove(), 700); resolve(); }), 900);
+      const t0 = Date.now();
+      c.addEventListener("click", () => { if (Date.now() - t0 < 250) return; c.classList.add("out"); setTimeout(() => c.remove(), 500); resolve(); });
     });
   }
 
@@ -228,7 +229,8 @@ export class DomPresenter implements Presenter {
       if (caption) c.append(el("div", { class: "cg-cap" }, caption));
       document.body.append(c);
       sfx("page");
-      setTimeout(() => c.addEventListener("click", () => { c.classList.add("out"); setTimeout(() => c.remove(), 600); resolve(); }), 700);
+      const t0 = Date.now();
+      c.addEventListener("click", () => { if (Date.now() - t0 < 250) return; c.classList.add("out"); setTimeout(() => c.remove(), 450); resolve(); });
     });
   }
 

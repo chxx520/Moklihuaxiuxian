@@ -5,6 +5,7 @@ import WebKit
 /// 存档通过原生桥写入 App 的 Documents/saves.json，启动时注入回网页。
 final class GameViewController: UIViewController, WKScriptMessageHandler, WKNavigationDelegate {
     private var webView: WKWebView!
+    private let saveQueue = DispatchQueue(label: "guishan.save", qos: .utility)
 
     private var saveURL: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -59,10 +60,13 @@ final class GameViewController: UIViewController, WKScriptMessageHandler, WKNavi
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.name == "store", let json = message.body as? String else { return }
-        do {
-            try json.data(using: .utf8)?.write(to: saveURL, options: .atomic)
-        } catch {
-            NSLog("归山：存档写入失败 \(error)")
+        let url = saveURL
+        saveQueue.async {
+            do {
+                try json.data(using: .utf8)?.write(to: url, options: .atomic)
+            } catch {
+                NSLog("归山：存档写入失败 \(error)")
+            }
         }
     }
 
