@@ -75,8 +75,25 @@ export function installTheme() {
   }
   r.style.setProperty("--clouds", CLOUDS);
   r.style.setProperty("--paper-tex", PAPER);
-  r.style.setProperty("--brush", BRUSH);
+  // 水墨墨团：带滤镜的矢量图在全屏尺寸下极耗内存（手机上可能闪退），
+  // 所以先用无滤镜的渐变顶替，再在 512px 小画布上把矢量墨团画一次，换成普通图片
+  r.style.setProperty("--brush", "radial-gradient(circle, #15120f 0 45%, rgba(21,18,15,0.85) 55%, transparent 70%)");
+  rasterizeBrush();
   installRipple();
+}
+
+function rasterizeBrush() {
+  const src = BRUSH.slice(5, -2); // 去掉 url(" ")
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const c = document.createElement("canvas");
+      c.width = c.height = 512;
+      c.getContext("2d")!.drawImage(img, 0, 0, 512, 512);
+      document.documentElement.style.setProperty("--brush", `url("${c.toDataURL("image/png")}")`);
+    } catch { /* 保持渐变版本 */ }
+  };
+  img.src = src;
 }
 
 // ———— 全局点击涟漪：每一次触摸都有墨晕和金屑 ————

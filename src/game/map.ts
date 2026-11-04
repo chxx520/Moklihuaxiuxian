@@ -38,7 +38,7 @@ function route(p: Player, from: string, to: string): { path: string[]; days: num
 
 /** 没有地图插画时，用代码画一张水墨舆图 */
 function inkMap() {
-  return `<svg viewBox="0 0 100 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 100 160" width="500" height="800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
     <defs><filter id="mi"><feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.5"/></filter>
     <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9dfc6"/><stop offset="1" stop-color="#f1e8d2"/></linearGradient></defs>
     <rect width="100" height="160" fill="url(#mg)"/>
@@ -61,7 +61,8 @@ export function openMap(s: GameState, done: (dest?: string) => void, hooks: Hook
   // 地图内容放在内层，有卷轴框时收进框内安全区
   const board = el("div", { class: "map-inner" });
   frame.append(board);
-  board.innerHTML = img ? `<img class="map-img" src="${img}" alt="">` : inkMap();
+  // 没有地图插画时，代码水墨图也转成图片（只栅格化一次，赶路动画不会反复重算滤镜）
+  board.innerHTML = `<img class="map-img" src="${img ?? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(inkMap())}" alt="">`;
   const lines = el("div", { class: "map-lines" });
   // 连线
   const seen = new Set<string>();

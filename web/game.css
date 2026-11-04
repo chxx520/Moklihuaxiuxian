@@ -220,3 +220,4 @@
 
 .map-inner { position: absolute; inset: 0; overflow: hidden; }
 .map-inner > svg, .map-inner .map-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.map-inner .map-img { object-fit: fill; }
