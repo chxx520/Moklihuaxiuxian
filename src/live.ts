@@ -56,10 +56,19 @@ type Live = {
 const lives = new Set<Live>();
 let raf = 0;
 
+/** 释放 WebGL 环境（浏览器同时能保留的数量有限，不释放会导致立绘空白甚至页面崩溃） */
+function release(l: Live) {
+  lives.delete(l);
+  l.alive = false;
+  try { l.gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch { /* 忽略 */ }
+  l.canvas.width = 1;
+  l.canvas.height = 1;
+}
+
 function loop(t: number) {
   raf = 0;
   for (const l of lives) {
-    if (!l.alive || !l.canvas.isConnected) { lives.delete(l); continue; }
+    if (!l.alive || !l.canvas.isConnected) { release(l); continue; }
     draw(l, t / 1000);
   }
   if (lives.size && !document.hidden) raf = requestAnimationFrame(loop);
@@ -69,6 +78,7 @@ function kick() {
   if (!raf && lives.size) raf = requestAnimationFrame(loop);
 }
 document.addEventListener("visibilitychange", kick);
+setInterval(() => { for (const l of lives) if (!l.canvas.isConnected) release(l); }, 2000);
 
 function draw(l: Live, time: number) {
   const { gl } = l;
@@ -164,6 +174,6 @@ export function animatePortrait(img: HTMLImageElement, opts: { sway?: number; br
   return {
     /** 说话时前倾一下 */
     pulse() { live.leanTarget = 1; kick(); },
-    stop() { live.alive = false; },
+    stop() { release(live); },
   };
 }
