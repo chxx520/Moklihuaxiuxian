@@ -2,6 +2,7 @@
 import data from "../content/battles.json";
 import { enemyArt } from "./art";
 import { sfx } from "./audio";
+import { burst, castTalisman, flash as fxFlash, floatText, shake } from "./fx";
 import { SPELLS, SPELL_ORDER, type Spell } from "./spells";
 import { el } from "./ui";
 
@@ -76,6 +77,8 @@ class Battle {
   uid = 0;
   log: string[] = [];
   objectBroken = false;
+  /** 界面层注入：敌人行动时播放动画 */
+  onAct?: (e: Enemy, who: "player" | "ally" | "object" | "all" | "none", real: number) => Promise<void>;
 
   constructor(def: BattleDef, private spells: string[], private assist: number) {
     this.def = def;
@@ -233,6 +236,7 @@ class Battle {
           const tgt = it.who === "ally" && this.ally ? this.ally : it.who === "object" && this.object ? this.object : this.player;
           const r = this.hurt(tgt, it.dmg);
           if (tgt === this.ally && r.real > 0) { this.allyHurtThisTurn = true; this.allyHurt = true; }
+          await this.onAct?.(e, tgt === this.player ? "player" : tgt === this.ally ? "ally" : "object", r.real);
           sfx(r.real ? "thud" : "block");
           this.say(r.real ? `${e.def.name}扑向${tgt === this.player ? "你" : tgt.name}，${r.real} 点。` : `${e.def.name}撞在护身符上。`);
         } else if (it.k === "hide") {
@@ -245,6 +249,7 @@ class Battle {
         } else if (it.k === "pulse") {
           [this.player, this.ally, this.object].forEach((u) => u && this.hurt(u, it.dmg));
           if (this.ally) this.allyHurtThisTurn = true;
+          await this.onAct?.(e, "all", it.dmg);
           sfx("thud");
           this.say(`${e.def.name}震荡开来，所有人受到 ${it.dmg} 点冲击。`);
         }
@@ -252,7 +257,7 @@ class Battle {
       e.step = (e.step + 1) % e.def.pattern.length;
       e.intent = parseIntent(e.def.pattern[e.step]);
       render();
-      await wait(520);
+      await wait(260);
     }
     [this.player, this.ally, this.object].forEach((u) => u && (u.shield = 0));
     if (this.light > 0) this.light--;
@@ -325,6 +330,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
     const start = (assist: number) => {
       const b = new Battle(def, spells, assist);
       let pending: { spell: Spell } | null = null;
+      let lastCard: DOMRect | null = null;
       let busy = false;
       const shownTips = new Set<string>();
 
@@ -343,13 +349,16 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         const foes = el("div", { class: "b-foes" }, ...b.enemies.filter((e) => !e.dead || false).map((e) => {
           const it = intentText(b, e);
           const target = pending && pending.spell.target === "enemy" && b.targetable(pending.spell, e);
-          const card = el("div", { class: `foe ${e.hidden ? "hidden" : ""} ${target ? "targetable" : ""} ${e.def.immune ? "immune" : ""}` },
+          const card = el("div", { class: `foe ${e.hidden ? "hidden" : ""} ${target ? "targetable" : ""} ${e.def.immune ? "immune" : ""}`, "data-uid": String(e.uid) },
             el("div", { class: `intent ${it.cls}` }, it.text),
             el("div", { class: "foe-art" }),
             el("div", { class: "foe-name" }, e.hidden ? "暗处" : e.def.name),
             e.def.immune ? el("div", { class: "foe-immune" }, "杀不死") : bar(e.hp, e.def.hp, "foe-hp"),
           );
-          (card.querySelector(".foe-art") as HTMLElement).innerHTML = enemyArt(e.def.art ?? e.def.name);
+          const art = card.querySelector(".foe-art") as HTMLElement;
+          art.innerHTML = enemyArt(e.def.art ?? e.def.name);
+          // 待机浮动：按当前时间取相位，重绘时不会跳
+          art.style.animationDelay = `-${((performance.now() / 1000 + e.uid * 0.7) % 3.2).toFixed(2)}s`;
           if (target) card.addEventListener("click", () => doCast(pending!.spell, e));
           return card;
         }));
@@ -357,7 +366,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         const guards: HTMLElement[] = [];
         const guardCard = (u: Unit, label: string) => {
           const target = pending?.spell.target === "guard";
-          const c = el("div", { class: `guard ${target ? "targetable" : ""}` },
+          const c = el("div", { class: `guard ${target ? "targetable" : ""}`, "data-unit": u === b.player ? "player" : u === b.ally ? "ally" : "object" },
             el("div", { class: "guard-name" }, label, u.shield ? el("span", { class: "shield" }, ` 盾${u.shield}`) : ""),
             bar(u.hp, u.max, u === b.player ? "hp" : "hp2"),
           );
@@ -394,6 +403,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
           );
           c.addEventListener("click", () => {
             if (busy) return;
+            lastCard = c.getBoundingClientRect();
             if (why) { flash(why); return; }
             if (s.target === "none") doCast(s);
             else { pending = pending?.spell === s ? null : { spell: s }; render(); }
@@ -408,7 +418,11 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
               c.addEventListener("click", () => {
                 if (busy) return;
                 if (why) { flash(why); return; }
+                const r = c.getBoundingClientRect();
+                const before = b.progress;
                 b.act(a);
+                burst(r.left + r.width / 2, r.top + r.height / 2, b.progress > before ? "#e9c97a" : "#888", b.progress > before ? 22 : 8);
+                if (b.progress > before) floatText(r, `+${b.progress - before}`, "prog");
                 after();
               });
               return c;
@@ -437,9 +451,36 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         render();
       };
 
-      const doCast = (s: Spell, target?: Enemy | Unit) => {
+      const COLORS: Record<string, string> = { 驱邪符: "#f3d27a", 破煞符: "#e8603c", 护身符: "#9fe0c0", 定身符: "#ecd070", 明灯符: "#fff3b8", 辨气术: "#a8dcec" };
+      const q = (sel: string) => root.querySelector(sel) as HTMLElement | null;
+      const doCast = async (s: Spell, target?: Enemy | Unit) => {
         pending = null;
+        busy = true;
+        const color = COLORS[s.name] ?? "#f3d27a";
+        const from = lastCard ?? root.getBoundingClientRect();
+        const isFoe = !!target && "uid" in target;
+        const tgtEl = isFoe ? q(`.foe[data-uid="${(target as Enemy).uid}"]`)
+          : target ? q(`.guard[data-unit="${target === b.player ? "player" : target === b.ally ? "ally" : "object"}"]`) : q(".b-foes");
+        const before = isFoe ? (target as Enemy).hp : 0;
+        if (tgtEl) await castTalisman(from, tgtEl.getBoundingClientRect(), color, s.name === "破煞符");
         b.cast(s, target);
+        if (isFoe && tgtEl) {
+          const e = target as Enemy;
+          const dmg = before - e.hp;
+          if (dmg > 0) floatText(tgtEl.getBoundingClientRect(), `-${dmg}`, "dmg");
+          if (s.name === "定身符") floatText(tgtEl.getBoundingClientRect(), "定", "seal");
+          shake(tgtEl, s.name === "破煞符" ? 10 : 5);
+          fxFlash(tgtEl.querySelector(".foe-art") ?? tgtEl, color);
+          if (e.dead) await tgtEl.animate([{ opacity: 1, filter: "blur(0)" }, { opacity: 0, filter: "blur(6px)", transform: "scale(1.15) translateY(-10px)" }], { duration: 420 }).finished.catch(() => {});
+          if (s.name === "破煞符" && b.object) { const o = q('.guard[data-unit="object"]'); if (o) { shake(o, 6); fxFlash(o, "#e8603c"); } }
+        } else if (tgtEl && target) {
+          floatText(tgtEl.getBoundingClientRect(), "+盾3", "shield");
+          fxFlash(tgtEl, color);
+        } else if (tgtEl) {
+          const r = tgtEl.getBoundingClientRect();
+          burst(r.left + r.width / 2, r.top + r.height / 2, color, 30);
+        }
+        busy = false;
         after();
       };
 
@@ -497,6 +538,20 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
           easier.addEventListener("click", () => { retries++; start(assist + 1); });
           root.append(card);
         }
+      };
+
+      b.onAct = async (e, who, real) => {
+        const card = q(`.foe[data-uid="${e.uid}"]`);
+        if (card) await card.animate([{ transform: "none" }, { transform: "translateY(36px) scale(1.12)", offset: 0.45 }, { transform: "none" }], { duration: 360, easing: "ease-in-out" }).finished.catch(() => {});
+        const targets = who === "all" ? ["player", "ally", "object"] : who === "none" ? [] : [who];
+        for (const t of targets) {
+          const el2 = q(`.guard[data-unit="${t}"]`);
+          if (!el2) continue;
+          shake(el2, real ? 8 : 3);
+          fxFlash(el2, real ? "rgba(200,60,40,0.8)" : "rgba(160,220,190,0.8)");
+          floatText(el2.getBoundingClientRect(), real ? `-${real}` : "挡", real ? "hurt" : "shield");
+        }
+        if (who === "player" || who === "all") shake(root, real ? 7 : 2);
       };
 
       b.startTurn();

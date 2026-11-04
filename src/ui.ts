@@ -4,6 +4,8 @@ import { findAsset } from "./assets";
 import { playMusic, sfx, unlockAudio } from "./audio";
 import { runBattle } from "./battle";
 import { runDraw } from "./draw";
+import { setWeather, weatherFor } from "./fx";
+import { animatePortrait } from "./live";
 import type { GameState, MenuItem, Presenter } from "./engine";
 import type { Value } from "./parser";
 import { getSettings } from "./save";
@@ -75,6 +77,7 @@ export class DomPresenter implements Presenter {
     layer.innerHTML = sceneHtml(name, m, variant ?? "", image);
     this.art.append(layer);
     requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add("in")));
+    setWeather($("#stage"), weatherFor(name, m, image));
     const old = [...this.art.children].slice(0, -1);
     setTimeout(() => old.forEach((o) => o.remove()), 1300);
 
@@ -105,8 +108,15 @@ export class DomPresenter implements Presenter {
     const f = el("div", { class: "fig" });
     f.innerHTML = figureHtml(portrait);
     this.figure.append(f);
+    const img = f.querySelector("img.portrait") as HTMLImageElement | null;
+    // 孩子和老人摆动小一些，年轻人衣袂飘得多一些
+    const key = portrait.split("#")[0];
+    const sway = /8岁|阿婆/.test(key) ? 0.6 : /青棠|温晚/.test(key) ? 1.3 : 1;
+    this.live = img ? animatePortrait(img, { sway, breath: /阿婆|病中/.test(portrait) ? 0.7 : 1 }) : null;
     requestAnimationFrame(() => requestAnimationFrame(() => f.classList.add("in")));
   }
+
+  private live: { pulse(): void; stop(): void } | null = null;
 
   /** 切换存档或跳转时，取消正在进行的打字和等待 */
   reset() {
@@ -127,7 +137,11 @@ export class DomPresenter implements Presenter {
     this.speaker.textContent = speaker ?? "";
     this.speaker.hidden = !speaker;
     const hasFig = !!portrait && hasPortrait(portrait);
-    if (hasFig) this.showFigure(portrait!);
+    if (hasFig) {
+      const same = portrait === this.figureName;
+      this.showFigure(portrait!);
+      if (same) this.live?.pulse();
+    }
     this.figure.classList.toggle("idle", !hasFig);
 
     return new Promise((resolve) => {
