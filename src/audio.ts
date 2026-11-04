@@ -9,8 +9,12 @@ let musicBus: GainNode;
 let sfxBus: GainNode;
 let reverb: ConvolverNode;
 
+let unlocked = false;
+let pendingMusic = "";
+
 function ensure() {
   if (ctx) return ctx;
+  if (!unlocked) return null;
   const AC = window.AudioContext || (window as any).webkitAudioContext;
   if (!AC) return null;
   ctx = new AC();
@@ -41,8 +45,16 @@ export function applyVolume() {
 
 /** iOS 需要在用户触摸后才能出声 */
 export function unlockAudio() {
+  const first = !unlocked;
+  unlocked = true;
   const c = ensure();
   if (c && c.state === "suspended") void c.resume();
+  if (first && pendingMusic) {
+    const m = pendingMusic;
+    pendingMusic = "";
+    current = "";
+    playMusic(m);
+  }
 }
 
 document.addEventListener("visibilitychange", () => {
@@ -271,6 +283,10 @@ function degreeToMidi(root: number, deg: number) {
 }
 
 export function playMusic(name: string) {
+  if (!unlocked) {
+    pendingMusic = name;
+    return;
+  }
   if (name === current) return;
   current = name;
   stopMusic(true);

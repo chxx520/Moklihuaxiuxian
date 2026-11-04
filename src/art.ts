@@ -207,6 +207,81 @@ function blossoms(r: () => number) {
   return `<g class="petals">${s}</g>`;
 }
 
+
+function room(ink: string, lamp: boolean, bed: boolean) {
+  // 室内：墙、一扇方格窗透出夜色、可选油灯与床
+  return `<defs><mask id="rw"><rect width="${W}" height="${H}" fill="white"/><rect x="200" y="120" width="140" height="150" fill="black"/></mask></defs>
+    <rect width="${W}" height="${H}" fill="${ink}" opacity="0.82" mask="url(#rw)"/>
+    <g stroke="${ink}" stroke-width="5" opacity="0.9" filter="url(#ink)">
+      <rect x="200" y="120" width="140" height="150" fill="none"/>
+      <line x1="270" y1="120" x2="270" y2="270"/><line x1="200" y1="195" x2="340" y2="195"/>
+      <line x1="235" y1="120" x2="235" y2="270" stroke-width="2"/><line x1="305" y1="120" x2="305" y2="270" stroke-width="2"/>
+    </g>
+    <path d="M200 270 L340 270 L300 560 L120 560 Z" fill="#e8e0c8" opacity="0.08"/>
+    ${bed ? `<g fill="${ink}" filter="url(#ink)"><rect x="20" y="380" width="200" height="22" opacity="0.9"/><rect x="26" y="402" width="10" height="70"/><rect x="204" y="402" width="10" height="70"/><path d="M30 380 q30 -26 70 -20 l110 4 l0 16 Z" fill="#cfc4ac" opacity="0.25"/></g>` : ""}
+    ${lamp ? `<circle cx="300" cy="410" r="70" fill="#e9a45a" opacity="0.2" filter="url(#blur8)"/><rect x="292" y="396" width="16" height="26" rx="4" fill="#e0b070" opacity="0.85"/><rect x="270" y="422" width="70" height="8" fill="${ink}" opacity="0.8"/>` : ""}`;
+}
+
+function shrine(ink: string) {
+  let tabs = "";
+  for (let row = 0; row < 3; row++) for (let i = 0; i < 7; i++) {
+    const x = 62 + i * 40, y = 250 + row * 52;
+    tabs += `<rect x="${x}" y="${y}" width="20" height="40" rx="3" opacity="${0.55 + (i % 3) * 0.12}"/>`;
+  }
+  return `<rect width="${W}" height="${H}" fill="${ink}" opacity="0.8"/>
+    <path d="M250 0 L300 0 L360 ${H} L180 ${H} Z" fill="#efe6cf" opacity="0.13" filter="url(#blur4)"/>
+    <g fill="#5a5044" filter="url(#ink)">${tabs}</g>
+    <rect x="40" y="410" width="310" height="14" fill="#3a332b"/>
+    <rect x="50" y="424" width="12" height="90" fill="#3a332b"/><rect x="328" y="424" width="12" height="90" fill="#3a332b"/>
+    <path d="M190 402 v-22" stroke="#d9a35a" stroke-width="2"/><circle cx="190" cy="378" r="10" fill="#e9a45a" opacity="0.35" filter="url(#blur4)"/>`;
+}
+
+function cave(ink: string) {
+  return `<defs><mask id="cv"><rect width="${W}" height="${H}" fill="white"/><path d="M60 560 Q60 160 195 140 Q330 160 330 560 Z" fill="black"/></mask></defs>
+    <rect width="${W}" height="${H}" fill="${ink}" opacity="0.88" mask="url(#cv)" filter="url(#ink)"/>
+    <path d="M40 120 q20 60 6 140 M350 110 q-14 80 4 150" stroke="${ink}" stroke-width="4" fill="none" opacity="0.6"/>
+    <ellipse cx="195" cy="470" rx="120" ry="28" fill="none" stroke="#c9a25e" stroke-width="2.5" opacity="0.7"/>
+    <ellipse cx="195" cy="470" rx="80" ry="18" fill="none" stroke="#c9a25e" stroke-width="1.5" opacity="0.6"/>
+    <ellipse cx="195" cy="470" rx="130" ry="34" fill="#e9c97a" opacity="0.15" filter="url(#blur8)" class="pulse"/>`;
+}
+
+function mirrorRealm(ink: string) {
+  return `<rect width="${W}" height="${H}" fill="#dfe3e4" opacity="0.5"/>
+    <g transform="translate(60 40) scale(0.7)">${gate(ink, "glow")}</g>
+    <path d="M195 380 Q200 460 180 560" stroke="#f4f2ea" stroke-width="18" fill="none" opacity="0.5" filter="url(#blur4)"/>`;
+}
+
+function field(ink: string, r: () => number, grey: boolean) {
+  let rows = "";
+  for (let i = 0; i < 10; i++) {
+    const y = 380 + i * 18;
+    const isGrey = grey && i % 2 === 0;
+    rows += `<path d="M${-20 + i * 6} ${y} Q195 ${y - 10} ${410 - i * 6} ${y}" stroke="${isGrey ? "#8a8a80" : "#5f7a4f"}" stroke-width="${4 + i * 0.6}" fill="none" opacity="${isGrey ? 0.45 : 0.6}"/>`;
+    for (let k = 0; k < 14; k++) {
+      const x = 10 + k * 28 + r() * 10;
+      rows += `<path d="M${x} ${y} l-3 -${8 + i} M${x} ${y} l3 -${7 + i}" stroke="${isGrey ? "#7d7a6e" : "#4f6a40"}" stroke-width="1.5" opacity="${isGrey ? 0.3 : 0.55}"/>`;
+    }
+  }
+  return `<g filter="url(#ink)">${rows}</g>${grey ? `<ellipse cx="200" cy="440" rx="180" ry="40" fill="#9a9a90" opacity="0.25" filter="url(#blur8)" class="mist"/>` : ""}
+    <path d="M300 372 l20 -14 l20 14 Z M296 372 h48 v16 h-48 Z" fill="${ink}" opacity="0.5"/>`;
+}
+
+function newWall(ink: string) {
+  let bricks = "";
+  for (let row = 0; row < 11; row++) for (let i = 0; i < 9; i++) {
+    const x = 40 + i * 36 + (row % 2) * 18, y = 250 + row * 20;
+    if (x < 30 || x > 340) continue;
+    bricks += `<rect x="${x}" y="${y}" width="32" height="16" opacity="${0.35 + ((i + row) % 3) * 0.08}"/>`;
+  }
+  return `<g fill="${ink}" filter="url(#ink)">
+      <path d="M0 300 L18 296 L30 306 L52 298 L60 330 L74 322 L80 470 L0 470 Z" opacity="0.5"/>
+      <path d="M390 310 L366 304 L352 316 L330 306 L318 470 L390 470 Z" opacity="0.5"/>
+      ${bricks}
+      <path d="M50 470 L340 470 L360 496 L30 496 Z" opacity="0.45"/>
+    </g>
+    <path d="M180 470 q15 12 30 0 Z" fill="#8a6a4a"/><path d="M186 468 l6 -8 l4 6 l6 -9 l4 11" stroke="#c9c2b0" stroke-width="2" fill="none"/>`;
+}
+
 /** 场景名 → 前景构图。未登记的场景只画远山和松。 */
 const PROPS: Record<string, (ink: string, r: () => number, variant: string) => string> = {
   符堂外: (ink) => hall(ink),
@@ -214,6 +289,13 @@ const PROPS: Record<string, (ink: string, r: () => number, variant: string) => s
   竹屋前: (ink, r) => hut(ink, r),
   槐荫村口: (ink, r) => locust(ink, r),
   温家旧门: (ink, _r, v) => gate(ink, v || "torn"),
+  温家西屋: (ink) => room(ink, true, true),
+  竹屋内: (ink) => room(ink, true, true),
+  祠堂: (ink) => shrine(ink),
+  闭关: (ink) => cave(ink),
+  镜中境: (ink) => mirrorRealm(ink),
+  田野: (ink, r) => field(ink, r, true),
+  温家新墙: (ink) => newWall(ink),
 };
 
 /** 生成完整场景 SVG。variant 用于同一地点的不同状态（如护符破损 / 发黑）。 */

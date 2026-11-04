@@ -46,6 +46,10 @@ export function checkConds(state: GameState, conds?: Cond[]): boolean {
       case "falsy": return !v;
       case "eq": return v === c.value;
       case "neq": return v !== c.value;
+      case "gt": return Number(v ?? 0) > Number(c.value);
+      case "lt": return Number(v ?? 0) < Number(c.value);
+      case "ge": return Number(v ?? 0) >= Number(c.value);
+      case "le": return Number(v ?? 0) <= Number(c.value);
     }
   });
 }

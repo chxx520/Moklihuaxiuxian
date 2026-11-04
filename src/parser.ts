@@ -3,7 +3,7 @@
 
 export type Value = boolean | number | string;
 
-export type Cond = { key: string; op: "truthy" | "falsy" | "eq" | "neq"; value?: Value };
+export type Cond = { key: string; op: "truthy" | "falsy" | "eq" | "neq" | "gt" | "lt" | "ge" | "le"; value?: Value };
 
 export type Item =
   | { t: "line"; speaker?: string; expr?: string; text: string; kind: "narration" | "dialogue" | "system"; cond?: Cond[] }
@@ -31,8 +31,9 @@ const COND_RE = /\s*\[\?([^\]]+)\]\s*$/;
 
 export function parseCond(src: string): Cond[] {
   return src.split(/\s*&\s*/).filter(Boolean).map((part) => {
-    let m = part.match(/^([\w.:]+)\s*(!=|=)\s*(.+)$/);
-    if (m) return { key: m[1], op: m[2] === "=" ? "eq" : "neq", value: parseValue(m[3]) } as Cond;
+    const m = part.match(/^([\w.:]+)\s*(!=|>=|<=|=|>|<)\s*(.+)$/);
+    const ops: Record<string, Cond["op"]> = { "=": "eq", "!=": "neq", ">": "gt", "<": "lt", ">=": "ge", "<=": "le" };
+    if (m) return { key: m[1], op: ops[m[2]], value: parseValue(m[3]) } as Cond;
     if (part.startsWith("!")) return { key: part.slice(1).trim(), op: "falsy" } as Cond;
     return { key: part.trim(), op: "truthy" } as Cond;
   });

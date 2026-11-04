@@ -205,5 +205,12 @@ export function runDraw(id: string): Promise<Record<string, boolean>> {
       resolve({ [`draw.${id}`]: true });
     });
     paint();
+    // 自动化测试用：返回当前这一笔在屏幕上的坐标
+    (window as any).__drawGuide = () => {
+      const guide = p.strokes[cur];
+      if (!guide) return null;
+      const r = canvas.getBoundingClientRect();
+      return guide.map(([x, y]) => [r.left + sx(x), r.top + sy(y)]);
+    };
   });
 }
