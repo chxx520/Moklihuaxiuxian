@@ -57,7 +57,10 @@ export function openMap(s: GameState, done: (dest?: string) => void, hooks: Hook
   const p = s.p!;
   const img = findAsset("scenes", "区域地图");
   const wrap = el("div", { class: "map-screen" });
-  const board = el("div", { class: "map-board" });
+  const frame = el("div", { class: "map-board" });
+  // 地图内容放在内层，有卷轴框时收进框内安全区
+  const board = el("div", { class: "map-inner" });
+  frame.append(board);
   board.innerHTML = img ? `<img class="map-img" src="${img}" alt="">` : inkMap();
   const lines = el("div", { class: "map-lines" });
   // 连线
@@ -91,7 +94,7 @@ export function openMap(s: GameState, done: (dest?: string) => void, hooks: Hook
   const head = el("div", { class: "map-head" }, el("span", { class: "map-title" }, "舆图"), el("span", { class: "dim" }, `${dateLabel(p)} · 干粮 ${p.bag["干粮"] ?? 0}`));
   const closeBtn = el("button", { class: "choice map-close" }, el("span", {}, "收起舆图"));
   closeBtn.addEventListener("click", () => { sfx("close"); wrap.remove(); done(); });
-  wrap.append(head, board, info, closeBtn);
+  wrap.append(head, frame, info, closeBtn);
   document.body.append(wrap);
   sfx("book");
   info.append(el("p", { class: "dim" }, "点选一处地点。"));

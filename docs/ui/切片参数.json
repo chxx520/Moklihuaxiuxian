@@ -1,0 +1,313 @@
+{
+  "coordinateSystem": "top-left pixels; insets order [left, top, right, bottom]",
+  "assets": {
+    "面板边框.png": {
+      "insets": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "minimumSize": [
+        513,
+        513
+      ],
+      "contentRect": [
+        270,
+        270,
+        484,
+        484
+      ],
+      "mode": "nine-slice"
+    },
+    "对话框.png": {
+      "insets": [
+        280,
+        166,
+        280,
+        166
+      ],
+      "minimumSize": [
+        561,
+        333
+      ],
+      "contentRect": [
+        290,
+        174,
+        572,
+        164
+      ],
+      "mode": "nine-slice",
+      "centerAlpha": 217
+    },
+    "名牌.png": {
+      "insets": [
+        132,
+        16,
+        132,
+        16
+      ],
+      "minimumSize": [
+        265,
+        128
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        140,
+        30,
+        232,
+        68
+      ]
+    },
+    "牌匾.png": {
+      "insets": [
+        240,
+        36,
+        240,
+        36
+      ],
+      "minimumSize": [
+        481,
+        256
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        250,
+        64,
+        524,
+        128
+      ]
+    },
+    "按钮_朱漆.png": {
+      "insets": [
+        252,
+        44,
+        252,
+        44
+      ],
+      "minimumSize": [
+        505,
+        256
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        264,
+        68,
+        496,
+        120
+      ]
+    },
+    "按钮_青玉.png": {
+      "insets": [
+        230,
+        44,
+        230,
+        44
+      ],
+      "minimumSize": [
+        461,
+        256
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        244,
+        68,
+        536,
+        120
+      ]
+    },
+    "按钮_鎏金.png": {
+      "insets": [
+        236,
+        48,
+        236,
+        48
+      ],
+      "minimumSize": [
+        473,
+        256
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        248,
+        72,
+        528,
+        112
+      ]
+    },
+    "选项.png": {
+      "insets": [
+        270,
+        40,
+        270,
+        40
+      ],
+      "minimumSize": [
+        541,
+        192
+      ],
+      "mode": "horizontal-three-slice",
+      "contentRect": [
+        282,
+        50,
+        460,
+        92
+      ]
+    },
+    "面板底.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        1024,
+        1536
+      ],
+      "contentRect": [
+        84,
+        220,
+        856,
+        1060
+      ]
+    },
+    "按钮_圆.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        512,
+        512
+      ],
+      "iconRect": [
+        148,
+        148,
+        216,
+        216
+      ]
+    },
+    "分隔线.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        1024,
+        64
+      ],
+      "note": "Keep center jade circular. Use uniform scaling or a custom five-slice if resizing."
+    },
+    "顶栏.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        1170,
+        300
+      ],
+      "anchor": "screen-top",
+      "note": "Deep ink-teal alpha fades downward; bottom ornament stays opaque."
+    },
+    "底栏.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        1170,
+        360
+      ],
+      "anchor": "screen-bottom",
+      "note": "Deep ink-teal alpha fades upward; top ornament stays opaque."
+    },
+    "境界徽章.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        512,
+        256
+      ],
+      "contentRect": [
+        174,
+        92,
+        164,
+        65
+      ]
+    },
+    "进度条框.png": {
+      "mode": "horizontal-three-slice",
+      "insets": [
+        100,
+        12,
+        100,
+        12
+      ],
+      "minimumSize": [
+        201,
+        96
+      ],
+      "fillRect": [
+        106,
+        34,
+        812,
+        28
+      ]
+    },
+    "卡牌.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        512,
+        640
+      ],
+      "contentRect": [
+        58,
+        120,
+        396,
+        454
+      ]
+    },
+    "舆图框.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        1152,
+        2048
+      ],
+      "mapRect": [
+        150,
+        220,
+        852,
+        1600
+      ],
+      "note": "Guaranteed fully transparent safe area; the aperture extends farther behind corner ornaments."
+    },
+    "标题字.png": {
+      "mode": "fixed-aspect",
+      "size": [
+        512,
+        1024
+      ],
+      "text": "归山",
+      "readingOrder": "top-to-bottom"
+    },
+    "加载背景.png": {
+      "mode": "cover-or-contain",
+      "size": [
+        1152,
+        2048
+      ],
+      "note": "Preserve central mountain and title/loading breathing room when cropping."
+    },
+    "图标表_功能.png": {
+      "mode": "atlas",
+      "size": [
+        1024,
+        768
+      ],
+      "columns": 4,
+      "rows": 3,
+      "cellSize": [
+        256,
+        256
+      ],
+      "order": [
+        "闭关",
+        "功法",
+        "行囊",
+        "炼丹",
+        "制符",
+        "历练",
+        "宗门",
+        "人物",
+        "旧事录",
+        "地图",
+        "设置",
+        "传讯"
+      ]
+    }
+  }
+}

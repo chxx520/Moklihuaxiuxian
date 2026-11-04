@@ -58,11 +58,12 @@ const BRUSH = svg(`
 /** 界面皮肤：assets/ui/ 里有对应素材就用素材，没有就用代码画的版本 */
 const SKIN: [string, string, string?][] = [
   // [CSS 变量, 素材文件名, 代码版回退]
-  ["--frame", "面板边框", FRAME], ["--frame-thin", "细边框", FRAME_THIN], ["--plaque", "牌匾", PLAQUE],
-  ["--ui-dialog", "对话框"], ["--ui-panel", "面板底"], ["--ui-topbar", "顶栏"], ["--ui-dock", "底栏"],
+  ["--frame", "（代码版）", FRAME], ["--frame-thin", "（代码版）", FRAME_THIN], ["--plaque", "（代码版）", PLAQUE],
+  ["--ui-frame", "面板边框"], ["--ui-plaque", "牌匾"], ["--ui-dialog", "对话框"], ["--ui-panel", "面板底"], ["--ui-topbar", "顶栏"], ["--ui-dock", "底栏"],
   ["--ui-btn-red", "按钮_朱漆"], ["--ui-btn-jade", "按钮_青玉"], ["--ui-btn-gold", "按钮_鎏金"], ["--ui-btn-round", "按钮_圆"],
   ["--ui-namebar", "名牌"], ["--ui-card", "卡牌"], ["--ui-choice", "选项"], ["--ui-bar-frame", "进度条框"],
   ["--ui-realm", "境界徽章"], ["--ui-map-frame", "舆图框"], ["--ui-title-logo", "标题字"], ["--ui-loading", "加载背景"], ["--ui-divider", "分隔线"],
+  ["--ui-icons", "图标表_功能"],
 ];
 
 export function installTheme() {

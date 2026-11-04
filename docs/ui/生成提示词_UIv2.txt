@@ -1,0 +1,324 @@
+《归山》UI 美术 v2 — 首批实际生成提示词
+
+模型：gpt-image-2.5-sunburst
+
+调用：GPT Image MCP edit_image；设定图为风格参考。
+
+参考文件：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+质量请求：high；n=1；PNG。实际输出已在交接说明和文件校验中记录。
+
+最终导出包含裁切、透明像素清理、尺寸/横向中段调整、左右结构对齐、对话框 alpha 校正；导出不改变原始生成文件。
+
+
+============================================================
+
+面板边框.png
+
+生成画布：1024x1024；背景请求：transparent；最终交付：1024×1024
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+A square 9-slice popup panel, like the large upper-left panel on the reference. Square silhouette with subtly rounded decorative corners, occupying 92% of canvas width and height. Cream ivory silk interior is opaque and almost flat, with very faint fine weave and NO vignetting, gradient, drawing or corner foliage inside the main content zone. Rich warm gold relief border with fine repetitive curling leaves, slender white-jade inner line. All four corners carry identical balanced gilded ruyi cloud clusters and tiny celadon inlays. Corner decoration must remain inside each corner 22% by 22% region; the central 56% of every edge is straight, constant width and free of prominent motifs, medallions, notches or widening. Broad open center. Make the left and right structures exact mirror counterparts. Outside silhouette fully transparent. No detached ornament at top center.
+
+
+============================================================
+
+面板底.png
+
+生成画布：1024x1536；背景请求：opaque；最终交付：1024×1536
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+An opaque full-bleed portrait panel background, canvas exactly 1024x1536, aspect 2:3. Cream ivory silk fills the ENTIRE canvas to its edges, with absolutely no transparent areas. A complete warm gold thin sculpted border follows all four sides about 30px inside the canvas; matching gilded cloud corners and restrained celadon accents. TOP: a large blank title reservation zone, with NO plaque drawn there. CENTER: a huge empty uniform ivory silk content area with only exceptionally faint fine weave, absolutely no illustration. BOTTOM: a low band of pale flowing cloud ornament confined to the bottom 12 percent. It is a practical game popup background, softly luxurious. Bilateral geometry and decorations. Match the ivory, gold and jade of the reference large panel.
+
+
+============================================================
+
+对话框.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1152×512
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One wide horizontal dialogue panel whose complete silhouette has aspect ratio 2.25:1, centered on the transparent canvas. The broad empty interior is dark ink-teal glass, 85 percent opacity, calm and uniform with very faint texture. Thin sculpted warm gold rim. Confine small flowing cloud and white-crane ornaments to the UPPER LEFT and LOWER RIGHT corners exactly; do not use the reference board's opposite-corner placement. One slim cinnabar lacquer vertical strip integrated into the left edge. These diagonal crane details and left red accent are intentional exceptions to bilateral ornaments, but the structural frame stays symmetrical. The 9-slice corners are small (within 22% of asset width, 30% of asset height); the top and bottom central 56% are straight narrow continuous gold lines, without any central crest. Empty dark teal center with no visible flowers, cranes or clouds encroaching into text area. Keep a modest visible margin around the complete shape.
+
+
+============================================================
+
+名牌.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：512×128
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One small horizontal cinnabar lacquer nameplate. Complete outer silhouette aspect ratio 4:1. Occupy about 90% of canvas width, center vertically with empty transparent margins above and below. Rich muted cinnabar face, a slender sculpted gold outline, identical ruyi cloud terminals left and right. Center 55% of the width is a flat unadorned empty lacquer rectangle suitable for text and horizontal stretching. Refined and smaller-scale than the title plaque; no stones or central crests.
+
+
+============================================================
+
+牌匾.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×256
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One horizontal title plaque, exact complete silhouette aspect ratio 4:1. Occupy about 90% of canvas width and center vertically, with ample transparent canvas above and below. Dark almost black brown lacquered wood face with very subtle horizontal grain. Substantial warm gilded relief border and matching large ruyi cloud-scroll terminal heads expanding at left and right ends. Flat blank central 55% of width is unobstructed. No top-center jade crest, no bottom-center crest or dangling ornaments. Continuous straight upper and lower rim through the middle, ready for horizontal stretching.
+
+
+============================================================
+
+分隔线.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×64
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+Exactly one very slender horizontal decorative divider line, complete outer silhouette aspect ratio SIXTEEN to ONE (16:1). About 1400 pixels long and at most 88 pixels tall in this 1536x1024 canvas, centered vertically with huge completely transparent margins above and below. ONE small smooth celadon jade bead at exact center, encircled by a restrained golden setting. Delicate matching tapered gold foliate scrollwork extends evenly to the left and right, gradually turning into extremely fine tapered gold lines. Keep all flourishes low and horizontal, no tall center crest, no large pendant. Elegant slender divider matching reference bottom ornament, with far less vertical height. Perfect mirror-symmetric shape.
+
+
+============================================================
+
+按钮_朱漆.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×256
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One primary cinnabar-red lacquer button, complete silhouette aspect ratio 4:1. About 90% canvas width, centered vertically, generous transparent top and bottom. Rich red face fades from softly lighter top to deeper red bottom, delicate upper specular highlight. Sculpted warm gold border and matching gold ruyi cloud heads only at the two ends, with tiny celadon touches. The middle 55% is a smooth flat blank lacquer text surface; no ornament or seam or pattern at center, continuous straight upper and lower rims suitable for horizontal stretching. Match the red button in the approved board.
+
+
+============================================================
+
+按钮_青玉.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×256
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One secondary soft celadon jade button, complete silhouette aspect ratio 4:1. About 90% canvas width, centered vertically, generous transparent top and bottom. Warm translucent pale blue-green jade with extremely faint internal silk-like mineral fibers and soft highlights, subtle volume. Thin warm gold border and identical small ruyi cloud endcaps. The middle 55% is a smooth blank jade surface, no engraving, writing, large cracks or decorative motifs; straight continuous rim through center suitable for horizontal stretching. Match the green jade button on the approved board.
+
+
+============================================================
+
+按钮_鎏金.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×256
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One important polished gilded-metal button, complete outer silhouette aspect ratio 4:1. About 90% canvas width, centered vertically, generous transparent top and bottom. Full warm gold face with fine subtle brushed metal, noticeable refined metallic sheen and upper-left highlights. Relief ruyi cloud engravings are clustered at matching two ends ONLY. A narrow outer perimeter is inset with one neat continuous row of SMALL celadon jade beads. The central 55% of width is entirely smooth and plain gold, for text and horizontal stretching. No large central gem, crest, picture or icon. Match reference gold button.
+
+
+============================================================
+
+按钮_圆.png
+
+生成画布：1024x1024；背景请求：transparent；最终交付：512×512
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One perfectly round ornate function button base like an antique bronze mirror, centered on square transparent canvas. Circular gilded sculpted ring with fine symmetrical cloud relief and EXACTLY EIGHT small celadon jade beads evenly placed at 12, 1:30, 3, 4:30, 6, 7:30, 9 and 10:30 clock positions. All eight beads are identical size; all eight positions must be visible. Center is a spacious empty concave deep ink-teal circle, no pictogram, no text, no imagery, with restrained smooth glass patina. The golden ring is substantial and finely dimensional, matched to approved reference round base. Complete round silhouette and all ornament fit within 92% of canvas, no detached shadows.
+
+
+============================================================
+
+选项.png
+
+生成画布：1536x1024；背景请求：transparent；最终交付：1024×192
+
+Create ONE finished original Chinese xianxia game UI sprite for 归山, using the attached approved style board as the material, color and ornament reference. This is a standalone production asset, not another board. Match warm sculpted gold relief, subdued celadon and milky jade, cinnabar lacquer, ivory silk, and deep ink-teal. Refined hand-painted realism harmonizing with light ink animation. Straight-on orthographic front view, perfectly level, no perspective. Crisp detailed edges, controlled dimensional bevels, soft upper-left light. The overall outline and ornament placement are rigorously left-right symmetrical unless an explicit exception is stated. No text, letters, numbers, runes, writing, watermark or logo. No extra detached items, no title, no mockup, no drop-shadow beyond the object. Do not copy the reference board layout; draw only the requested component. All decoration belongs to its border or ends; all future text/content zones stay plain and empty. Keep all parts inside the canvas with generous clear margins. Native PNG alpha transparency outside the asset, never a painted checkerboard or solid backdrop, unless this asset explicitly requests an opaque background. Return ONLY the one requested sprite.
+
+REQUESTED COMPONENT:
+One horizontal narrative choice strip, complete silhouette aspect ratio 16:3 (5.333:1), centered with transparent margins. An elegant long ivory silk talisman slip, thin matching warm gold rim and small ruyi clouds at BOTH ends. One small plain red lacquer circular seal at the LEFT end, entirely blank, absolutely no lettering or marking inside. Left-only red seal is the explicit exception to symmetric design; outer frame and ends remain bilateral. Middle 60% width is flat uniformly ivory silk with only faint weave, blank for choice text and horizontal stretching. Long, low, refined proportions, not a massive plaque.
+
+
+============================================================
+
+对话框二次精修实际提示词
+
+Precisely refine image 1 (the dialogue panel). Image 2 is only the approved material/style reference. Produce ONE standalone empty dark ink-teal glazed-glass dialogue panel, transparent PNG background, 1536x1024 canvas. Preserve its warm gold thin rim, elegant small ivory clouds, deep teal material and the red lacquer strip on the LEFT. Change its shape to a less elongated box: the bounding box MUST be approximately x=90 to 1446, y=210 to 812, giving a true 2.25:1 outer ratio. Exact placement matters. The center remains calm, flat, entirely empty; remove large sweeping cloudy patterns in the text field. Make glass interior 85 percent opaque, borders opaque and outside fully alpha transparent. NINE SLICE: corner ornament zones limited to 20 percent of width and 28 percent of height. Add one SMALL white crane among gilded clouds in the UPPER LEFT corner, and one matching SMALL white crane among gilded clouds in the LOWER RIGHT corner. Both cranes must be entirely within these corner zones. The other corners have very modest gold curves only. Do not put a large crane along the right middle edge. The red left vertical lacquer accent is slim, no dangling tassel below it. Top/bottom middle 60 percent are thin perfectly straight continuous gold rims with no central ornament. Left/right middle portions also perfectly straight. Keep the frame structurally symmetrical except intentional opposite-corner cranes and left red accent. Upper-left illumination, same craftsmanship as references. No text, letters, marks, logo or watermark, no board, no extra components. Clean alpha edge.
+
+
+
+============================================================
+
+已确认的第零步设定图原提示词
+
+《归山》UI设定图生成提示词
+
+工具：GPT Image MCP / edit_image（画风参考输入，新建 UI 设定板）
+模型：gpt-image-2.5-flare
+请求设置：size=2048x2048；quality=high；n=1；output_format=png；background=opaque
+实际输出：2048×2048，RGB，PNG
+参考 1：归山_第二批_B版_完整美术包/assets/characters/顾长庚_平静.png（人物画风与配色）
+参考 2：归山_第二批_B版_完整美术包/assets/scenes/符堂外_清晨.png（场景画风与配色）
+参考仅用于色调与手绘协调，不将人物或场景加入 UI 设定板。
+
+完整提示词：
+Use case: stylized-concept. Create a polished original UI art style board for the Chinese xianxia iPhone game 归山. OUTPUT: a single 2048 by 2048 pixel square PNG, opaque pure white presentation background, twelve distinct UI components arranged neatly with generous white gutters. Absolutely NO TEXT, letters, numerals, labels, signatures, logo, watermark, or pseudo-writing anywhere.
+REFERENCE ROLES: Image 1 is an existing character painting; Image 2 is an existing environment painting. Use them ONLY to harmonize the subdued ink-animation color palette and the refined hand-painted softness. Do NOT depict the man, building, mountains, or a scene on this board. This is a new UI component style exploration, not an edit of the scenes.
+ART DIRECTION: commercially polished, luxurious Chinese cultivation RPG interface craftsmanship. Finely sculpted warm gilded metal relief, celadon jade and milky white jade inlays, cinnabar red lacquer, deep ink-teal glazed glass, creamy ivory woven silk. Rich layered bevels, delicately engraved ruyi clouds and curling foliage, occasional small white crane ornaments, restrained luminous jade. Elegant and richly dimensional without garish saturation. Crisp usable silhouettes and edge detail, soft warm highlights from upper left consistently. Real material variation and depth rather than simple outlines. All motifs original, no existing game design or emblem. No neon magenta or purple, no western baroque ornament, no generic fantasy gems.
+LAYOUT: exactly twelve separate complete components, all front-facing, orthographic, parallel to canvas, no overlap, no tilted objects, no crops. Four balanced horizontal zones on the white board. Top zone: one large nearly-square panel at left, one tall card at center-right, one round button base at far right with one wide small realm badge below it. Middle zone: one wide dialogue box at left, one dark wood title plaque at right with one smaller red nameplate beneath it. Lower zone: three equally sized long horizontal buttons in one row, red then jade then gold. Bottom zone: one slender progress-bar frame and, beneath it, one thin decorative divider. Maintain consistent visual spacing and a clean outer margin. The parts fill the board well and are large enough to reveal their craft.
+THE TWELVE COMPONENTS:
+1 Large panel frame: wide carved gilded border, a slender inner milky-jade band, matching gilded cloud-and-foliage clusters with tiny celadon inlays at all four corners. A broad completely empty ivory silk center, only very faint weave. Corner ornaments contained in corner areas; straight edges are narrow continuous extendable patterns, without a big ornament in the middle of an edge.
+2 Tall rectangular card frame: ivory talisman-paper interior, fine gold border, small geometric fret corners, one small unlettered cinnabar circular seal socket centered at its top; blank center.
+3 Circular function-button base: exactly eight small jade beads evenly spaced on a sculpted gold ring, empty deep ink-teal concave round center like an antique bronze mirror. No icon in center.
+4 Horizontal realm badge: intricate gilded cloud relief surrounding a blank dark lacquer writing field, paired small yin-yang and cloud ornaments at the sides, one luminous celadon stone at top center.
+5 Wide dialogue box: dark ink-teal glazed-glass interior, slender warm gold outline, tiny cloud and white-crane ornament at corners, a thin red lacquer accent along the left edge; broad empty center for future text.
+6 Wide title plaque: dark lacquered wood, a substantial sculpted gilded border and rolled cloud-scroll ends, the central half entirely flat and blank.
+7 Small nameplate: cinnabar lacquer, gold edge, ruyi cloud-shaped matching ends, plain blank center.
+8 Long cinnabar button: red lacquer bright-to-dark from top to bottom, gentle upper highlight, sculpted gold rim and matching golden ruyi ends; central half completely smooth, plain and blank.
+9 Long jade button: translucent soft celadon with extremely subtle internal jade fibers, thin gold rim, matching small cloud ends; central half smooth and blank.
+10 Long gilt button: beautiful polished warm gold face, cloud relief concentrated at both ends, a rim of tiny jade beads; middle half flat and unmarked for text.
+11 Long thin progress-bar frame: narrow gilded rim, small matching lotus terminals, hollow blank center showing the white board background, no progress fill.
+12 Thin divider: one celadon bead in the exact center and matching tapering gold foliate scrollwork extending horizontally to both sides.
+CONSTRAINTS: bilateral silhouette and ornamental symmetry for each component except the explicitly specified left red dialogue accent; light falls from upper left, so material highlights may differ naturally. Keep every writing area empty and flat. Do not add any thirteenth component, samples, swatches, text, icons, tiny subpanels, scattered decorations, mock phone, or background illustration. The white board is opaque; this is the design approval sheet, not a transparent sprite atlas. Produce the finished artwork, not a wireframe.
+
+
+
+
+
+======================================================================
+
+第二批：剩余9张实际生成提示词
+
+工具：GPT Image MCP edit_image；模型：gpt-image-2.5-sunburst；quality=high；n=1；PNG。
+
+生成结果再进行裁切、标准尺寸导出、透明边缘清理、上下栏渐隐底重建及图标重新排格；这些后处理不改写原始生成文件。
+
+
+============================================================
+
+顶栏.png
+
+请求画布：1536x1024；背景：transparent；最终：1170×300
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One horizontal TOP resource-bar background. The final asset is 1170x300; on this larger transparent canvas draw one broad horizontal bar with outer aspect ratio 3.9:1, centered horizontally and vertically. A plain dark ink-teal glazed-glass background fades from stronger opacity at its TOP to almost transparent immediately above its LOWER rim. The lower rim is a narrow continuous warm gilded foliate scrollwork ornamental band spanning the full width. Exactly one SMALL downward-pointing ruyi cloud pendant at the middle of the lower rim. Lower corners have small matching cloud curls. Leave the large upper area EMPTY for resource counters, and leave the LEFT quarter especially clear for a separate realm badge; DO NOT draw the badge, icons, circular holes, containers or text. Not a boxed panel: NO top border, no complete side borders, only the lower gold ornament band. The decorative band should stay compact, within the bottom 20% of the sprite height, and the central pendant not oversized. Background area is dark teal glass with real alpha fade, not white or black opaque matte. No objects above or below the single bar.
+
+
+============================================================
+
+底栏.png
+
+请求画布：1536x1024；背景：transparent；最终：1170×360
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One horizontal BOTTOM navigation-bar background. Final canvas 1170x360; draw a single broad bar of aspect ratio 3.25:1 centered on this transparent canvas. Plain deep ink-teal background is darkest at the BOTTOM and fades to transparent toward the TOP. Along the TOP edge runs one gently undulating narrow gilded auspicious-cloud ornamental band. At the two extreme ENDS of this band place two matching small WHITE CRANE silhouette ornaments with spread wings facing inward, carved ivory and soft gold, left and right mirrored. Cranes must stay close to the corners and not invade the broad blank central area for button icons. No circles, button sockets, icons, labels or writing. No boxed panel: NO bottom gold border and no vertical side borders; only the top cloud band and end cranes. The glass fill must remain plain and empty. Keep upper ornament to at most 30% of total sprite height and leave broad blank space below it. Genuine alpha transparency outside the silhouette; deep ink-teal fade, no backdrop.
+
+
+============================================================
+
+境界徽章.png
+
+请求画布：1024x1024；背景：transparent；最终：512×256
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One horizontal realm badge, overall silhouette approximately 2:1. Center it on square transparent canvas with a generous empty margin. Match the small badge below the round button in the reference: a finely sculpted warm gilded plaque, thick ruyi cloud curls and engraved edges, a large plain dark lacquer central label field with NO TEXT. The LEFT and RIGHT each have one SMALL circular yin-yang ornament, framed by matching clouds. These are complementary decorative yin-yang signs, not letters. One smooth glowing celadon gem at TOP CENTER; no detached particles or rays. Center label area broad and flat. All decoration attached to one compact badge. Bilateral silhouette, restrained jade glow, soft upper-left light. No strings or long hanging tassels below.
+
+
+============================================================
+
+进度条框.png
+
+请求画布：1536x1024；背景：transparent；最终：1024×96
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+Exactly ONE thin horizontal progress-bar OUTLINE, total silhouette aspect ratio 10.67:1. Draw approximately 1400px wide and 132px tall centered on the 1536x1024 canvas, with huge completely transparent top and bottom margins. Thin double-rim gilded metal rails run straight and parallel, the ends capped with matching SMALL lotus heads in gold and pale jade. Each lotus head occupies at most 8% of total width. The inner long trough is COMPLETELY TRANSPARENT, genuinely alpha=0, no glass, no fill, no ivory strip, no dark background, no progress, no writing. Hollow capsule-like golden outline with a long rectangular center; no crest, no central gem or decoration. Keep straight rails thin, not a thick button. Smooth continuous center section that can stretch horizontally; end lotus heads remain symmetric. Match the progress frame near the bottom of the reference sheet.
+
+
+============================================================
+
+卡牌.png
+
+请求画布：1024x1280；背景：transparent；最终：512×640
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One portrait rectangular battle-spell or inventory CARD FRAME, exact overall aspect ratio 4:5. Occupy 93% of canvas, centered and complete. Warm ivory talisman-paper interior with fine extremely faint paper grain, a narrow gilded outer rim, small geometric Chinese fret patterns at all four corners, exactly one small unlettered cinnabar-red circular seal socket at TOP CENTER. NO characters, runes, artwork, icon, pattern or ornament in the large blank center. The red circular socket is smooth blank lacquer. Restrained elegant frame of the same craftsmanship as the card near upper center of the reference sheet, but less elongated because target 512x640. Gold rim and corners thin enough to leave at least 75% of card width usable. Native alpha transparent outside the card, opaque ivory inside. No hanging parts, no tabletop, no scene.
+
+
+============================================================
+
+舆图框.png
+
+请求画布：1152x2048；背景：transparent；最终：1152×2048
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One TALL vertical map outer frame, exactly 1152x2048 PNG. A hollow Chinese hanging-scroll frame, NOT a filled scroll. Center is COMPLETELY alpha transparent, no parchment, no paper, no map or landscape. Upper and lower edges are dark lacquered wood horizontal scroll rods, each with matching sculpted gilded cylindrical finials at left and right. The left and right boundaries are very slender straight warm gold rails connecting the rods. Center aperture spans at least 82% of width and 82% of height. Leave small transparent outer margins, all finials fully visible. Match elegant warm gilt and dark wood materials of the approved title plaque. Strict bilateral structure. No ropes, tassels, central crests, clouds across center, titles, writing or symbols. Gold rods parallel and perfectly level; fine gold side rails vertical. This is a frame whose middle and outside are both transparent.
+
+
+============================================================
+
+标题字.png
+
+请求画布：1024x2048；背景：transparent；最终：512×1024
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+Original Chinese brush-calligraphy GAME TITLE wordmark. The EXACT TWO Chinese characters are "归山", arranged VERTICALLY: simplified Chinese 归 at the TOP and 山 at the BOTTOM. These are the only readable characters anywhere. Use the correct simplified 归, NOT traditional 歸; clearly readable structure. Confident elegant vigorous deep-black ink brushwork with controlled flying-white dry-brush texture, expressive pointed strokes, breathing room between the two characters. No overly tangled strokes, no extra poetic lines. A SMALL plain cinnabar-red square seal block beside the lower character, intentionally abstract blank seal surface with NO additional writing. Black ink and one red accent only, no gold frame, no jade, no scenery. Entire calligraphy silhouette fits in a tall 1:2 canvas with 7% clear margins on each side, genuinely transparent alpha background. The reference is ONLY for the refined traditional tone and restrained red, do not copy any UI component. No Latin text, subtitle, date, signature, watermark or pseudo-characters. Produce finished original calligraphy lettering suitable for a quiet ink-animation cultivation game.
+
+
+============================================================
+
+加载背景.png
+
+请求画布：1152x2048；背景：opaque；最终：1152×2048
+
+参考：/home/agent/project/归山_第二批_B版_完整美术包/assets/scenes/符堂外_清晨.png；/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+A single opaque full-bleed portrait loading illustration, exactly 1152x2048. Image 1 is the existing approved environment painting: preserve its light Chinese ink-animation hand-painted style, warm off-white paper, subdued blue-gray mountains, fine restrained brush contour and soft mineral watercolor. Image 2 is only the UI color reference. Scene: Liuyun Mountain rises from a sea of pale clouds in the MIDDLE THIRD of the composition, tiny traditional Daoist hall on its summit. An aged pine with asymmetrical branches frames the lower-left foreground but is confined mostly to the edge. ONE small white crane glides beside the central mountain against mist. The TOP THIRD is almost empty soft ivory sky with faint mist, reserved for a title overlay. The BOTTOM THIRD is almost empty pale cloud sea and silk-paper wash, reserved for loading text and progress, with no large solid boulders or branches across it. Distinct mountain silhouette and exquisite tiny hall in center, deeply layered distant mountains fading gently into cloud. Quiet, light, restrained, NOT cinematic photorealism, NOT glossy 3D, no saturated neon, no dark vignette. No text, no title lettering, no frame, no logo, no seals, no UI elements; top/bottom breathing room essential. Opaque RGB-style painted paper background with no transparent holes. This landscape need not be symmetric; use natural composition.
+
+
+============================================================
+
+图标表_功能.png
+
+请求画布：1024x768；背景：transparent；最终：1024×768
+
+参考：/home/agent/project/归山_UI美术_v2_第零步/assets/ui/UI设定图.png
+
+Produce ONE original finished asset for the iPhone Chinese cultivation game 归山. Use the attached approved UI style sheet only as the reference for craftsmanship, warm gold, subdued celadon, ivory, dark ink-teal and cinnabar lacquer. It is a reference sheet, do not reproduce its arrangement. Commercially polished Chinese xianxia UI with refined gilded relief, jade inlay, ruyi clouds and restrained floral scrollwork, soft warm light from upper left. Orthographic straight-on sprite, crisp silhouette and exquisite layered material. Bilaterally symmetrical geometry and ornaments except where specifically requested. No text, numerals, letters, labels, pseudo-writing, logo or watermark unless the specific request requires the TWO title characters. Do not add unrelated decorations or extra objects. A real alpha-transparent PNG background, never a baked checkerboard, no cast shadow outside the object, unless explicitly requesting an opaque illustration. Preserve empty usable content areas. Everything must fit within the canvas, including all end ornaments.
+
+SPECIFIC ASSET:
+One production SPRITE SHEET of EXACTLY TWELVE distinct small game function icons, a precise 4 COLUMNS by 3 ROWS grid on 1024x768 pixels. Each cell is 256x256. All icons are individually centered at x=128,384,640,896 and y=128,384,640, and all fit inside a centered 190x190 area of their own cell. Uniform visual weight. NO drawn cell boundaries, no tiles, no labels, no text, no backdrop. All space between icons and around each icon truly alpha transparent. Art: finely embossed dimensional warm gold linework with tiny celadon and cinnabar accents, restrained elegant Chinese xianxia craftsmanship matching the reference, sufficiently simple and readable at small size. Do not surround icons with button rings or plaques. The exact row-major order is: ROW ONE: 1 a meditation cushion with three gentle rising qi wisps; 2 a partly rolled cultivation scroll and slim book; 3 a tied silk drawstring pouch; 4 a small three-legged alchemical incense furnace with a lid and wisp of steam. ROW TWO: 5 one writing brush crossing one blank pale-yellow talisman slip, no writing on the talisman; 6 a winding mountain path leading between distant peaks; 7 a traditional Chinese sect mountain gate archway with a blank plaque; 8 two small overlapping human silhouette busts. ROW THREE: 9 an open antique book with blank pages; 10 a spread-out folded map with a few simple mountain contour lines but NO letters; 11 a round bagua/eight-trigram settings disc, with authentic simple trigram line marks only around a small center, no lettering; 12 a folded paper crane with two visible pointed wings. Exactly one icon per cell, twelve icons total. No added symbols, numbers, stars, sparkles between cells or sample components. Match the warm gold and soft jade of the approved board while keeping icons practical.

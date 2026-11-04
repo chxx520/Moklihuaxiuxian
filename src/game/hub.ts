@@ -187,9 +187,13 @@ export class Hub {
     const nav = el("nav", { class: "hub-nav" }, ...NAV.map(([label, glyph, idx]) => {
       const b = el("button", { class: "nav-btn" });
       const sheet = findAsset("ui", "图标表_功能");
-      const ic = el("span", { class: "nav-ic" });
-      if (sheet) { ic.style.setProperty("--nav-sheet-img", `url("${sheet}")`); ic.style.backgroundImage = `url("${sheet}")`; ic.style.backgroundPosition = `${(idx % 4) * 33.33}% ${Math.floor(idx / 4) * 50}%`; ic.classList.add("sprite"); }
-      else ic.textContent = glyph;
+      const ic = el("span", { class: "nav-ic", "data-glyph": glyph });
+      if (sheet) {
+        const pos = `${(idx % 4) * 33.333}% ${Math.floor(idx / 4) * 50}%`;
+        ic.style.setProperty("--nav-sheet-img", `url("${sheet}")`);
+        ic.style.setProperty("--nav-pos", pos);
+        ic.classList.add("sprite");
+      } else ic.textContent = glyph;
       b.append(ic, el("span", { class: "nav-label" }, label));
       b.addEventListener("click", () => this.nav(label));
       return b;
