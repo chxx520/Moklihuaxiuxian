@@ -1,0 +1,74 @@
+name: 打包 IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-ipa
+  cancel-in-progress: true
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 构建网页内核并检查剧本
+        run: |
+          npm ci
+          npm run build
+
+      - name: 生成 Xcode 工程
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+
+      - name: 编译（不签名）
+        run: |
+          xcodebuild \
+            -project ios/Guishan.xcodeproj \
+            -scheme Guishan \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tail -n 40
+          test -d build/dd/Build/Products/Release-iphoneos/Guishan.app
+
+      - name: 打包成 IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R build/dd/Build/Products/Release-iphoneos/Guishan.app build/Payload/
+          test -f build/Payload/Guishan.app/www/index.html
+          cd build && zip -qry Guishan-unsigned.ipa Payload
+          ls -lh Guishan-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Guishan-unsigned-ipa
+          path: build/Guishan-unsigned.ipa
+          retention-days: 30
+
+      - name: 更新「最新测试版」发布页
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHORT=$(git rev-parse --short HEAD)
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest build/Guishan-unsigned.ipa \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "最新测试版 · $SHORT" \
+            --notes "未签名 IPA，用全能签 / Sideloadly / 爱思助手 / TrollStore 等工具自签安装。提交：$GITHUB_SHA"

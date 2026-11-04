@@ -1,0 +1,30 @@
+name: Guishan
+options:
+  bundleIdPrefix: com.chxx520
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+targets:
+  Guishan:
+    type: application
+    platform: iOS
+    sources:
+      - path: Guishan
+      # 网页内核（npm run build 生成），整体作为 www 文件夹放进 App
+      - path: ../dist/www
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: Guishan
+        PRODUCT_BUNDLE_IDENTIFIER: com.chxx520.guishan
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_FILE: Guishan/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGN_IDENTITY: ""
