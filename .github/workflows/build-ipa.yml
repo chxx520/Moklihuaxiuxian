@@ -67,14 +67,18 @@ jobs:
           path: build/Guishan-unsigned.ipa
           retention-days: 30
 
-      - name: 更新「最新测试版」发布页
+      - name: 更新「最新测试版」发布页（失败自动重试）
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           SHORT=$(git rev-parse --short HEAD)
-          gh release delete latest --yes --cleanup-tag || true
-          gh release create latest build/Guishan-unsigned.ipa \
-            --prerelease \
-            --target "$GITHUB_SHA" \
-            --title "最新测试版 · $SHORT" \
-            --notes "未签名 IPA，用全能签 / Sideloadly / 爱思助手 / TrollStore 等工具自签安装。提交：$GITHUB_SHA"
+          NOTES="未签名 IPA，用全能签 / Sideloadly / 爱思助手 / TrollStore 等工具自签安装。提交：$GITHUB_SHA"
+          retry() { for i in 1 2 3 4 5; do "$@" && return 0; echo "第 $i 次失败，稍后重试"; sleep $((i * 10)); done; return 1; }
+          if gh release view latest >/dev/null 2>&1; then
+            # 已有发布页：先上传新包覆盖，再更新标题和对应提交，下载地址始终可用
+            retry gh release upload latest build/Guishan-unsigned.ipa --clobber
+            retry gh release edit latest --title "最新测试版 · $SHORT" --notes "$NOTES" --prerelease
+            retry git push -f origin "$GITHUB_SHA:refs/tags/latest"
+          else
+            retry gh release create latest build/Guishan-unsigned.ipa --prerelease --target "$GITHUB_SHA" --title "最新测试版 · $SHORT" --notes "$NOTES"
+          fi
