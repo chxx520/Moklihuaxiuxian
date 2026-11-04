@@ -9,6 +9,8 @@ import { animatePortrait } from "./live";
 import type { GameState, MenuItem, Presenter } from "./engine";
 import type { Value } from "./parser";
 import { getSettings } from "./save";
+import { battleMods, give, ITEMS } from "./game/model";
+import { quickOrFight } from "./game/map";
 
 export const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) =>
   root.querySelector(sel) as T;
@@ -118,6 +120,8 @@ export class DomPresenter implements Presenter {
   }
 
   private live: { pulse(): void; stop(): void } | null = null;
+  /** 由入口注入：弹出面板 */
+  sheetFn: ((title: string, body: HTMLElement, actions?: [string, () => void][], onDismiss?: () => void) => () => void) | null = null;
 
   /** 切换存档或跳转时，取消正在进行的打字和等待 */
   reset() {
@@ -218,11 +222,21 @@ export class DomPresenter implements Presenter {
       case "draw":
         this.reset();
         return runDraw(arg);
+      case "fight": {
+        // 剧情里的遭遇战：@fight 山狼
+        this.reset();
+        const prev = state.music;
+        if (!state.p || !this.sheetFn) return;
+        const win = await quickOrFight(state, arg, { sheet: this.sheetFn }, { forced: true, grant: state.spells.length ? undefined : ["驱邪符", "护身符"] });
+        if (prev) playMusic(prev);
+        return { [`fight.${arg}`]: win };
+      }
       case "battle": {
         this.reset();
         const prev = state.music;
         playMusic("挑战");
-        const r = await runBattle(arg, state.spells);
+        const p = state.p;
+        const r = await runBattle(arg, state.spells, p ? { mods: battleMods(p), items: { ...p.bag }, itemDefs: ITEMS as any, onUseItem: (k) => give(p, k, -1) } : {});
         if (prev) playMusic(prev);
         return { [`${arg}.win`]: r.win, [`${arg}.objectHp`]: r.objectHp, [`${arg}.allyHurt`]: r.allyHurt, [`${arg}.turns`]: r.turns, [`${arg}.retries`]: r.retries, [`${arg}.broke`]: r.broke };
       }
@@ -283,13 +297,16 @@ export class DomPresenter implements Presenter {
   }
 
   toast(text: string) {
-    const isSpell = text.startsWith("习得");
+    const kinds: [RegExp, string][] = [[/^习得/, "法"], [/^获得/, "物"], [/^新地点/, "地"], [/^修为/, "修"]];
+    const seal = kinds.find(([r]) => r.test(text))?.[1] ?? "记";
     const t = el("div", { class: "toast" },
-      el("span", { class: "seal" }, isSpell ? "法" : "记"),
-      el("span", { class: "toast-text" }, text.replace(/^(记入旧事录|习得术法)：/, isSpell ? "习得 · " : "")),
+      el("span", { class: "seal" }, seal),
+      el("span", { class: "toast-text" }, text.replace(/^(记入旧事录|习得术法)：/, seal === "法" ? "习得 · " : "")),
     );
+    if (seal === "物" || seal === "法") sfx("get");
     this.toasts.append(t);
     setTimeout(() => t.classList.add("out"), 2600);
     setTimeout(() => t.remove(), 3200);
   }
+
 }

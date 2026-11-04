@@ -1,0 +1,18 @@
+{
+  "_说明": "剧情事件。at=地点；when=条件（剧本条件写法）；auto=到达或回到主界面时自动触发；label=手动触发的按钮文字；repeat=可重复。",
+  "events": [
+    { "id": "ch1_storm", "node": "ch1_storm", "at": "白沙渡", "when": "seen.ch1_start & xpfull", "auto": true },
+    { "id": "ch1_zhou", "node": "ch1_zhou_talk", "at": "白沙渡", "when": "seen.ch1_start & !seen.ch1_storm", "label": "和老周说话", "repeat": true },
+    { "id": "ch1_town", "node": "ch1_town", "at": "青石镇", "when": "seen.ch1_storm", "auto": true },
+    { "id": "ch1_forest", "node": "ch1_forest", "at": "雾隐林", "when": "seen.ch1_storm", "auto": true },
+    { "id": "ch1_village", "node": "ch1_village", "at": "槐荫村", "when": "seen.ch1_storm & !seen.prologue", "auto": true },
+    { "id": "ch1_gate", "node": "ch1_gate", "at": "留云山", "when": "seen.ch1_storm", "auto": true },
+    { "id": "v1", "node": "v1_arrive", "at": "槐荫村", "when": "seen.prologue_task & month>=8", "auto": true },
+    { "id": "v1_early", "node": "v1_too_early", "at": "槐荫村", "when": "seen.prologue_task & month<8 & !seen.v1_arrive", "label": "去温家看看", "repeat": true },
+    { "id": "t1", "node": "t1_card", "at": "留云山", "when": "seen.v1_return & realm>=4", "auto": true },
+    { "id": "t1_hint", "node": "t1_hint", "at": "留云山", "when": "seen.v1_return & realm<4", "label": "去竹屋见师父", "repeat": true },
+    { "id": "t2", "node": "t2_card", "at": "留云山", "when": "seen.v2_qingtang_ask & realm>=8", "auto": true },
+    { "id": "t2_hint", "node": "t2_hint", "at": "留云山", "when": "seen.v2_qingtang_ask & realm<8", "label": "去符堂看看", "repeat": true },
+    { "id": "shop_qian", "node": "qian_talk", "at": "青石镇", "when": "seen.ch1_town", "label": "和钱掌柜闲聊", "repeat": true }
+  ]
+}

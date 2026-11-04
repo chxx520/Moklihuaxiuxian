@@ -1,6 +1,7 @@
 // 剧情引擎：按节点执行剧本，维护状态，并在安全节点自动存档。
 import type { Cond, HubSpot, Item, MenuOption, Story, Value } from "./parser";
 import { autosave, logEvent, saveCheckpoint } from "./save";
+import { applyAct, mirror, type Player } from "./game/model";
 
 export type GameState = {
   version: 1;
@@ -16,6 +17,12 @@ export type GameState = {
   music?: string;
   /** 说话人 → 立绘键（随年龄、时期变化），例如 温小满 → 温小满_13岁 */
   cast?: Record<string, string>;
+  /** 正式版角色（创建角色后才有） */
+  p?: Player;
+  /** 剧情结束后回到主界面 */
+  mode?: "story" | "hub";
+  /** 已触发过的事件 */
+  done?: string[];
   savedAt: number;
 };
 
@@ -89,6 +96,8 @@ export class Engine {
     if (!node) throw new Error(`找不到节点：${id}`);
     const s = this.state;
     s.node = id;
+    s.mode = "story";
+    mirror(s);
     s.facts[`seen.${id}`] = true;
     s.savedAt = Date.now();
     autosave(s);
@@ -131,6 +140,12 @@ export class Engine {
         case "goal":
           s.goal = it.text;
           break;
+        case "act": {
+          const msg = applyAct(s, it.name, this.fmt(it.arg));
+          mirror(s);
+          if (msg) this.ui.toast(msg);
+          break;
+        }
         case "goto":
           return it.target === "back" ? s.hub ?? null : it.target;
         case "end":
@@ -148,6 +163,12 @@ export class Engine {
           if (it.name === "checkpoint") {
             saveCheckpoint(it.arg, s);
             break;
+          }
+          if (it.name === "hub") {
+            s.mode = "hub";
+            if (it.arg) s.facts["hub.next"] = it.arg;
+            autosave(s);
+            return null;
           }
           if (it.name === "music") s.music = it.arg;
           const result = await this.ui.cmd(it.name, this.fmt(it.arg), s);

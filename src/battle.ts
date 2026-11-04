@@ -36,6 +36,20 @@ type Enemy = {
 };
 type Unit = { name: string; hp: number; max: number; shield: number };
 
+/** 角色带入战斗的加成（来自灵根、心法、法宝、境界） */
+export type BattleMods = { hp: number; talismanDmg: number; shield: number; regen: number; atk: number; qiChance: number; firstHitHalf: boolean; paper: number };
+export type BattleOpts = { mods?: Partial<BattleMods>; items?: Record<string, number>; itemDefs?: Record<string, { battle?: { qi?: number; hp?: number; paper?: number } }>; onUseItem?: (name: string) => void; grant?: string[] };
+const NO_MODS: BattleMods = { hp: 0, talismanDmg: 0, shield: 0, regen: 0, atk: 0, qiChance: 0, firstHitHalf: false, paper: 0 };
+
+/** 动态注册的挑战（地图遭遇战） */
+export function registerBattle(id: string, def: BattleDef) {
+  BATTLES[id] = def;
+}
+export function registerFoe(id: string, def: EnemyDef) {
+  BESTIARY[id] = def;
+}
+export type { BattleDef, EnemyDef };
+
 export type BattleResult = { win: boolean; objectHp: number; allyHurt: boolean; turns: number; retries: number; broke: number };
 
 const BESTIARY = (data as any).bestiary as Record<string, EnemyDef>;
@@ -80,12 +94,16 @@ class Battle {
   /** 界面层注入：敌人行动时播放动画 */
   onAct?: (e: Enemy, who: "player" | "ally" | "object" | "all" | "none", real: number) => Promise<void>;
 
-  constructor(def: BattleDef, private spells: string[], private assist: number) {
+  mods: BattleMods;
+  hitOnce = false;
+  constructor(def: BattleDef, private spells: string[], private assist: number, mods: Partial<BattleMods> = {}) {
     this.def = def;
-    this.player = { name: "你", hp: def.hp + assist * 4, max: def.hp + assist * 4, shield: 0 };
+    this.mods = { ...NO_MODS, ...mods };
+    const hp = def.hp + assist * 4 + this.mods.hp;
+    this.player = { name: "你", hp, max: hp, shield: 0 };
     if (def.ally) this.ally = { name: def.ally.name, hp: def.ally.hp + assist * 2, max: def.ally.hp + assist * 2, shield: 0 };
     if (def.object) this.object = { name: def.object.name, hp: def.object.hp + assist * 2, max: def.object.hp + assist * 2, shield: 0 };
-    this.paper = (def.paper ?? 2) + assist;
+    this.paper = (def.paper ?? 2) + assist + this.mods.paper;
     def.enemies.forEach((e) => this.spawn(e));
   }
 
@@ -111,7 +129,11 @@ class Battle {
 
   startTurn() {
     this.turn++;
-    this.qi = this.qiPerTurn;
+    this.qi = this.qiPerTurn + (Math.random() < this.mods.qiChance ? 1 : 0);
+    if (this.turn > 1 && this.mods.regen && this.player.hp < this.player.max) {
+      this.player.hp = Math.min(this.player.max, this.player.hp + this.mods.regen);
+      this.say(`灵根生发，气血恢复 ${this.mods.regen} 点。`);
+    }
     this.senseUsed = false;
     this.sensed = false;
     this.usedThisTurn = {};
@@ -130,6 +152,11 @@ class Battle {
   }
 
   hurt(u: Unit, dmg: number) {
+    if (u === this.player && this.mods.firstHitHalf && !this.hitOnce && dmg > 0) {
+      this.hitOnce = true;
+      dmg = Math.ceil(dmg / 2);
+      this.say("木牌微微一亮，挡去了一半的力道。");
+    }
     const absorbed = Math.min(u.shield, dmg);
     u.shield -= absorbed;
     const real = dmg - absorbed;
@@ -158,7 +185,7 @@ class Battle {
       case "驱邪符":
       case "破煞符": {
         const e = target as Enemy;
-        const dmg = s.name === "驱邪符" ? 3 : 6;
+        const dmg = (s.name === "驱邪符" ? 3 : 6) + this.mods.atk + this.mods.talismanDmg;
         e.hp = Math.max(0, e.hp - dmg);
         sfx(s.name === "驱邪符" ? "hit" : "burst");
         this.say(`${s.name}击中${e.def.name}，${dmg} 点。`);
@@ -174,7 +201,7 @@ class Battle {
       }
       case "护身符": {
         const u = target as Unit;
-        u.shield += 3;
+        u.shield += 3 + this.mods.shield;
         sfx("shield");
         this.say(`护身符护住了${u.name === "你" ? "自己" : u.name}。`);
         break;
@@ -233,6 +260,7 @@ class Battle {
       } else {
         const it = e.intent;
         if (it.k === "attack") {
+          if (e.hidden) { e.hidden = false; this.say(`${e.def.name}从暗处扑了出来！`); }
           const tgt = it.who === "ally" && this.ally ? this.ally : it.who === "object" && this.object ? this.object : this.player;
           const r = this.hurt(tgt, it.dmg);
           if (tgt === this.ally && r.real > 0) { this.allyHurtThisTurn = true; this.allyHurt = true; }
@@ -315,7 +343,8 @@ function bar(cur: number, max: number, cls = "") {
   return el("div", { class: `bar ${cls}` }, el("i", { style: `width:${pct}%` }), el("b", {}, `${cur}/${max}`));
 }
 
-export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
+export function runBattle(id: string, spells: string[], opts: BattleOpts = {}): Promise<BattleResult> {
+  if (opts.grant) spells = [...new Set([...spells, ...opts.grant])];
   const def = BATTLES[id];
   if (!def) return Promise.reject(new Error(`没有这个挑战：${id}`));
   let retries = 0;
@@ -323,12 +352,15 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
   return new Promise((resolve) => {
     const root = el("div", { class: "battle" });
     // 用当前场景作为战斗背景（压暗），让战斗和剧情在同一个地方发生
-    const sceneImg = document.querySelector("#art .layer:last-child .scene-img") as HTMLImageElement | null;
+    const game = document.getElementById("game")!;
+    const inStory = !game.hidden;
+    const sceneImg = (inStory ? document.querySelector("#art .layer:last-child .scene-img") : document.querySelector("#hub .scene-img")) as HTMLImageElement | null;
     if (sceneImg) root.style.setProperty("--battle-bg", `url("${sceneImg.getAttribute("src")}")`);
-    document.getElementById("game")!.append(root);
+    if (inStory) game.append(root);
+    else { root.classList.add("floating"); document.body.append(root); }
 
     const start = (assist: number) => {
-      const b = new Battle(def, spells, assist);
+      const b = new Battle(def, spells, assist, opts.mods);
       let pending: { spell: Spell } | null = null;
       let lastCard: DOMRect | null = null;
       let busy = false;
@@ -432,6 +464,25 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
             }))
           : "";
 
+        const pills = Object.entries(opts.items ?? {}).filter(([k, n]) => n > 0 && opts.itemDefs?.[k]?.battle);
+        const pillRow = pills.length ? el("div", { class: "b-pills" }, ...pills.map(([k, n]) => {
+          const btn = el("button", { class: "pill-btn" }, el("span", {}, k), el("b", {}, `×${n}`));
+          btn.addEventListener("click", () => {
+            if (busy) return;
+            const eff = opts.itemDefs![k].battle!;
+            if (eff.hp) b.player.hp = Math.min(b.player.max, b.player.hp + eff.hp);
+            if (eff.qi) b.qi += eff.qi;
+            if (eff.paper) b.paper += eff.paper;
+            opts.items![k]--;
+            opts.onUseItem?.(k);
+            sfx("get");
+            b.say(`服下${k}。`);
+            const r = btn.getBoundingClientRect();
+            floatText(r, eff.hp ? `+${eff.hp} 气血` : eff.qi ? `+${eff.qi} 灵力` : `+${eff.paper} 符纸`, "shield");
+            render();
+          });
+          return btn;
+        })) : "";
         const endBtn = el("button", { class: "choice b-end" }, el("span", {}, pending ? "取消选择" : "结束回合"));
         endBtn.addEventListener("click", () => {
           if (busy) return;
@@ -444,7 +495,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
           foes,
           el("div", { class: "b-mid" }, ritual, guards.length ? el("div", { class: "b-guards" }, ...guards) : ""),
           log,
-          el("div", { class: "b-bottom" }, me, cards, acts, endBtn),
+          el("div", { class: "b-bottom" }, me, pillRow, cards, acts, endBtn),
         );
       };
 

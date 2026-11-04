@@ -9,6 +9,7 @@ export type Item =
   | { t: "line"; speaker?: string; expr?: string; text: string; kind: "narration" | "dialogue" | "system"; cond?: Cond[] }
   | { t: "scene"; name: string; sub?: string; mood?: string; variant?: string; image?: string; cond?: Cond[] }
   | { t: "cmd"; name: string; arg: string; cond?: Cond[] }
+  | { t: "act"; name: string; arg: string; cond?: Cond[] }
   | { t: "chapter"; text: string; cond?: Cond[] }
   | { t: "set"; key: string; value: Value; cond?: Cond[] }
   | { t: "spell"; name: string; cond?: Cond[] }
@@ -67,7 +68,7 @@ function parseLine(text: string, file: string, lineNo: number): Item {
     const [mood, variant] = (look ?? "").split("/").map((s) => s.trim());
     return { t: "scene", name, sub: sub || undefined, mood: mood || undefined, variant: variant || undefined, image: image || undefined, cond };
   }
-  const cm = body.match(/^@(cast|cg|card|music|sfx|battle|draw|checkpoint|pause)\b\s*(.*)$/);
+  const cm = body.match(/^@(cast|cg|card|music|sfx|battle|draw|checkpoint|pause|hub|fight|shop)\b\s*(.*)$/);
   if (cm) return { t: "cmd", name: cm[1], arg: cm[2].trim().replace(/\\n/g, "\n"), cond };
   if (body.startsWith("@chapter")) return { t: "chapter", text: body.slice(8).trim(), cond };
   if (body.startsWith("@end")) return { t: "end", text: body.slice(4).trim().replace(/\\n/g, "\n"), cond };
@@ -81,6 +82,8 @@ function parseLine(text: string, file: string, lineNo: number): Item {
     if (m) return { t: "clue", key: m[1], text: m[2].trim(), cond };
     m = cmd.match(/^goal\s+(.+)$/);
     if (m) return { t: "goal", text: m[1].trim(), cond };
+    m = cmd.match(/^(give|take|stones|xp|days|years|month|learn|tech|unlock|loc|outfit|realm)\b\s*(.*)$/);
+    if (m) return { t: "act", name: m[1], arg: m[2].trim(), cond };
     throw new StoryError(`${where} 无法识别的指令：${body}`);
   }
   if (body.startsWith("〔")) return { t: "line", kind: "system", text: body, cond };
@@ -202,7 +205,7 @@ export function lintStory(story: Story): string[] {
     // 节点结尾必须有去处，否则游戏会无提示地停住
     const last = n.items[n.items.length - 1];
     const ends = (it?: Item): boolean =>
-      !!it && !it.cond && (it.t === "goto" || it.t === "end" || it.t === "hub" ||
+      !!it && !it.cond && (it.t === "goto" || it.t === "end" || it.t === "hub" || (it.t === "cmd" && it.name === "hub") ||
         (it.t === "menu" && it.options.every((o) => ends(o.body[o.body.length - 1]))));
     if (!ends(last)) problems.push(`${n.file} # ${n.id} 结尾没有无条件的跳转、@end 或调查点，会形成死路`);
   }

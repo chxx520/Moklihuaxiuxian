@@ -375,6 +375,9 @@ FIG["温晚"] = `<ellipse cx="60" cy="40" rx="13" ry="16"/>
     <path d="M47 34 Q44 70 40 110 L50 104 Q50 70 52 46 Z M73 34 Q76 70 80 110 L70 104 Q70 70 68 46 Z" opacity="0.8"/>
     <path d="M48 58 Q38 66 36 100 L30 230 Q60 250 90 230 L84 100 Q82 66 72 58 Q60 68 48 58 Z" opacity="0.75"/>
     <path d="M30 230 Q40 260 34 290 M60 240 Q66 268 58 296 M90 230 Q84 262 92 288" stroke="currentColor" stroke-width="6" fill="none" opacity="0.35"/>`;
+FIG["主角"] = `<ellipse cx="60" cy="40" rx="13" ry="16"/><path d="M52 20 q8 -10 16 0 Z"/>
+    <path d="M47 58 Q38 66 36 100 L30 290 L90 290 L84 100 Q82 66 73 58 Q60 68 47 58 Z"/>
+    <path d="M36 112 Q26 150 26 190 L38 192 Q40 154 46 122 Z M84 112 Q94 150 94 190 L82 192 Q80 154 74 122 Z" opacity="0.8"/>`;
 FIG["阿禾"] = `<ellipse cx="60" cy="150" rx="7" ry="6"/><ellipse cx="60" cy="168" rx="13" ry="14"/>
     <path d="M48 183 Q41 190 39 214 L34 290 L86 290 L81 214 Q79 190 72 183 Q60 191 48 183 Z"/>
     <path d="M82 210 l14 -18" stroke="currentColor" stroke-width="3"/>`;

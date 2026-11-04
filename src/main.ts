@@ -2,6 +2,9 @@
 import { titleHtml } from "./art";
 import { setWeather } from "./fx";
 import { inkWipe, installTheme } from "./theme";
+import { createCharacter } from "./game/create";
+import { Hub } from "./game/hub";
+import { mirror } from "./game/model";
 import { assetCount } from "./assets";
 import { applyVolume, playMusic, setAmbience, sfx, stopMusic, unlockAudio } from "./audio";
 import { battleIds } from "./battle";
@@ -15,17 +18,22 @@ import storyFiles from "virtual:story";
 
 declare const __BUILD__: string;
 
-const START = "prologue";
+const START = "ch1_start";
 const story = parseStory(storyFiles as Record<string, string>);
 const problems = lintStory(story);
 if (problems.length) console.warn("剧本问题：\n" + problems.join("\n"));
 
 let presenter: DomPresenter;
 let engine: Engine | null = null;
+let hub: Hub;
+/** 当前游戏状态（剧情中或主界面中） */
+let current: GameState | null = null;
 
-function sheet(title: string, body: HTMLElement, actions: [string, () => void][] = []) {
+function sheet(title: string, body: HTMLElement, actions: [string, () => void][] = [], onDismiss?: () => void) {
   sfx("open");
-  const close = () => { sfx("close"); wrap.remove(); };
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; sfx("close"); wrap.remove(); };
+  const dismiss = () => { if (closed) return; close(); onDismiss?.(); };
   const wrap = el("div", { class: "sheet-wrap" },
     el("div", { class: "sheet" },
       el("div", { class: "sheet-head" }, el("h2", {}, title), el("button", { class: "icon" }, "✕")),
@@ -37,8 +45,8 @@ function sheet(title: string, body: HTMLElement, actions: [string, () => void][]
       })),
     ),
   );
-  wrap.querySelector(".icon")!.addEventListener("click", close);
-  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  wrap.querySelector(".icon")!.addEventListener("click", dismiss);
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) dismiss(); });
   document.body.append(wrap);
   return close;
 }
@@ -49,7 +57,7 @@ const fmtTime = (t: number) => {
 };
 
 function showJournal() {
-  const s = engine?.state;
+  const s = engine?.state ?? current;
   if (!s) return;
   const spells = SPELL_ORDER.filter((n) => s.spells.includes(n)).map((n) => SPELLS[n]);
   const body = el("div", { class: "journal" },
@@ -75,7 +83,8 @@ function slotList(mode: "save" | "load") {
     if (mode === "load" && !st) btn.setAttribute("disabled", "");
     btn.addEventListener("click", () => {
       document.querySelector(".sheet-wrap")?.remove();
-      if (mode === "save" && engine) { saveSlot(i, engine.state); presenter.toast(`已存到第 ${i + 1} 格`); }
+      const cur = engine?.state ?? current;
+      if (mode === "save" && cur) { saveSlot(i, cur); presenter.toast(`已存到第 ${i + 1} 格`); }
       if (mode === "load" && st) startFrom(structuredClone(st));
     });
     box.append(el("div", { class: "slot" }, el("span", {}, `第 ${i + 1} 格`), info, btn));
@@ -196,6 +205,15 @@ function startFrom(state: GameState) {
 
 function startFromNow(state: GameState) {
   engine?.stop();
+  hub?.close();
+  current = state;
+  if (state.mode === "hub" && state.p) {
+    presenter.reset();
+    $("#title").hidden = true;
+    $("#game").hidden = true;
+    hub.open(state, { offline: true });
+    return;
+  }
   presenter.reset();
   document.querySelectorAll(".battle, .draw, .cg, .time-card, .end-card").forEach((n) => n.remove());
   state.cast ??= {};
@@ -205,7 +223,17 @@ function startFromNow(state: GameState) {
   engine = new Engine(story, state, presenter);
   const mine = engine;
   mine.run().then(() => {
-    if (engine === mine && !$("#game").hidden) toTitle(true);
+    if (engine !== mine || $("#game").hidden) return;
+    // 剧情遇到 @hub：回到所在地主界面
+    if (state.mode === "hub" && state.p) {
+      void inkWipe(() => {
+        presenter.reset();
+        $("#game").hidden = true;
+        hub.open(state);
+      });
+      return;
+    }
+    toTitle(true);
   }).catch((err) => {
     console.error(err);
     presenter.toast(`出错了：${err.message}`);
@@ -224,6 +252,8 @@ function askName(): Promise<string> {
 function toTitle(finished = false) {
   engine?.stop();
   engine = null;
+  hub?.close();
+  current = null;
   if (finished) clearAuto();
   document.querySelectorAll(".battle, .draw").forEach((n) => n.remove());
   $("#game").hidden = true;
@@ -242,11 +272,29 @@ function boot() {
   installTheme();
   presenter = new DomPresenter();
   $("#title-art").innerHTML = titleHtml();
-  $("#version").textContent = `原型 ${__BUILD__}`;
+  $("#version").textContent = `M1 测试版 · ${__BUILD__}`;
+  presenter.sheetFn = (t, b, a, d) => sheet(t, b, a, d);
+  hub = new Hub({
+    runStory: (node) => {
+      const s = current!;
+      s.node = node;
+      s.mode = "story";
+      s.hub = undefined;
+      void inkWipe(() => startFromNow(s));
+    },
+    openMenu: () => showMenu(),
+    openJournal: () => showJournal(),
+    sheet: (t, b, a, d) => sheet(t, b, a, d),
+  });
   $("#btn-new").addEventListener("click", async () => {
     unlockAudio();
-    const name = await askName();
-    startFrom(newState(name, START));
+    $("#title").hidden = true;
+    const { player, name } = await createCharacter();
+    const s = newState(name, START);
+    s.p = player;
+    mirror(s);
+    $("#title").hidden = false;
+    startFrom(s);
   });
   $("#btn-continue").addEventListener("click", () => {
     unlockAudio();
@@ -269,4 +317,7 @@ function boot() {
 }
 
 void stopMusic;
+// 自动化测试用：读取当前状态
+(window as any).__guishan = { get state() { return engine?.state ?? current; } };
+void askName;
 boot();

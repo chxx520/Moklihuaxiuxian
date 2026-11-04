@@ -198,3 +198,7 @@
 .b-hint { font-size: 12px; line-height: 1.4; }
 .b-log.hint { color: var(--ink); }
 .b-log.hint .b-hint { text-align: left; }
+.b-pills { display: flex; gap: 6px; overflow-x: auto; }
+.pill-btn { flex: none; display: flex; gap: 4px; align-items: center; padding: 4px 10px; border: 1px solid rgba(201,154,74,0.7); border-radius: 14px;
+  background: linear-gradient(180deg, #fff6dc, #ecd9a8); font-size: 13px; color: #3a2a14; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.pill-btn b { font-weight: 400; color: var(--lacquer); }
