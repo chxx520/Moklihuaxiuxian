@@ -317,6 +317,9 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
 
   return new Promise((resolve) => {
     const root = el("div", { class: "battle" });
+    // 用当前场景作为战斗背景（压暗），让战斗和剧情在同一个地方发生
+    const sceneImg = document.querySelector("#art .layer:last-child .scene-img") as HTMLImageElement | null;
+    if (sceneImg) root.style.setProperty("--battle-bg", `url("${sceneImg.getAttribute("src")}")`);
     document.getElementById("game")!.append(root);
 
     const start = (assist: number) => {

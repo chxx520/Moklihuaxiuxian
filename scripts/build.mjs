@@ -45,8 +45,8 @@ async function buildAssets(outDir) {
       const cached = join(cacheDir, `${kind}__${outName}.${st.size}.${Math.floor(st.mtimeMs)}`);
       if (!existsSync(cached)) {
         mkdirSync(cacheDir, { recursive: true });
-        const maxH = kind === "items" ? 600 : 1600;
-        await sharp(src).resize({ height: maxH, withoutEnlargement: true }).webp({ quality: 84, alphaQuality: 90 }).toFile(cached);
+        const maxH = kind === "items" ? 600 : 2048;
+        await sharp(src).resize({ height: maxH, withoutEnlargement: true }).webp({ quality: 86, alphaQuality: 92 }).toFile(cached);
       }
       copyFileSync(cached, dest);
     }

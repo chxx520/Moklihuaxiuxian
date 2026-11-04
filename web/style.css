@@ -311,3 +311,20 @@ html { touch-action: manipulation; }
   background-size: 200px 220px; }
 .fx-petals { background-image: radial-gradient(3px 2px at 20% 30%, #d9a3a0, transparent), radial-gradient(2px 3px at 70% 20%, #d9a3a0, transparent), radial-gradient(3px 2px at 45% 60%, #e2b4b0, transparent);
   animation: drift 18s ease-in-out infinite alternate; }
+.fig { align-items: flex-end; }
+
+/* 标题页插画背景 */
+.title-img { object-position: center 30%; }
+.title-veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(243,236,220,0.55) 0%, rgba(243,236,220,0.15) 40%, rgba(243,236,220,0.1) 60%, rgba(243,236,220,0.75) 100%); }
+/* 战斗背景：当前场景压暗 */
+.battle { background-image: linear-gradient(180deg, rgba(28,26,24,0.55), rgba(28,26,24,0.35) 40%, rgba(200,190,172,0.92) 62%), var(--battle-bg, none), radial-gradient(140% 70% at 50% 0%, #d9d2c2 0%, #c9c0ad 45%, #b8ae99 100%);
+  background-size: cover; background-position: center 35%; }
+.battle .b-turn { color: #e9e2cf; }
+.battle .b-log, .battle .b-goal { background: rgba(243,236,220,0.82); }
+.b-foes { min-height: 210px; }
+.foe-art { height: 150px; }
+.foe.immune .foe-art { height: 190px; }
+.foe-name { color: #f3ecdc; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+.foe-art img { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+.title-sub { background: rgba(243,236,220,0.78); padding: 6px 14px 6px 20px; border-radius: 2px; color: var(--ink); text-shadow: none; }
+h1 { text-shadow: 0 0 18px rgba(243,236,220,1), 0 0 6px rgba(243,236,220,0.9); }

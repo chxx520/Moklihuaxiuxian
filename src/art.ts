@@ -444,14 +444,24 @@ function sceneCache(name: string, mood: Mood, variant: string) {
 
 /** 标题页背景 */
 export function titleHtml() {
+  const img = findAsset("scenes", "符堂外_清晨");
+  if (img) return `<img class="scene-img title-img" src="${img}" alt=""><div class="title-veil"></div>${mistLayer("dawn")}`;
   return sceneCache("归山", "dawn", "") + mistLayer("dawn");
+}
+
+/** 角色实际身高（相对成年人）。立绘画布一样大，游戏里按设定缩放。 */
+const HEIGHTS: [string, number][] = [
+  ["温小满_8岁", 0.6], ["阿禾_8岁", 0.6], ["温小满_13岁", 0.84], ["温阿婆", 0.86], ["温晚", 0.97], ["陆青棠", 0.96],
+];
+function figureScale(key: string) {
+  return HEIGHTS.find(([k]) => key.startsWith(k))?.[1] ?? 1;
 }
 
 /** 立绘：portrait 形如「温小满_8岁#笑」。有图用图，否则用剪影。 */
 export function figureHtml(portrait: string): string {
   const [key, expr] = portrait.split("#");
   const img = findAsset("characters", expr ? `${key}_${expr}` : key, key);
-  if (img) return `<img class="portrait" src="${img}" alt="" decoding="async">`;
+  if (img) return `<img class="portrait" src="${img}" alt="" decoding="async" style="height:${figureScale(key) * 100}%">`;
   const fig = renderFigure(key.split("_")[0]);
   return fig ? svgImg(fig, "fig-svg") : "";
 }
