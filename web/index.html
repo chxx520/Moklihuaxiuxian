@@ -5,42 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#15191b">
+<meta name="theme-color" content="#e9e2d0">
 <title>归山</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <section id="title">
+  <div id="title-art" class="art-fill"></div>
   <div class="title-main">
     <h1>归山</h1>
-    <p class="title-sub">同一扇门，三次回来</p>
+    <span class="seal title-seal">留云</span>
   </div>
+  <p class="title-sub">同一扇门　三次回来</p>
   <div class="title-buttons">
-    <button id="btn-continue" class="choice" hidden>继续</button>
-    <button id="btn-new" class="choice">新游戏</button>
+    <button id="btn-continue" class="choice" hidden><span>继续</span></button>
+    <button id="btn-new" class="choice"><span>新游戏</span></button>
     <button id="btn-debug" class="link">调试面板</button>
+    <p id="version"></p>
   </div>
-  <p id="version" class="dim"></p>
 </section>
 
 <section id="game" hidden>
+  <div id="stage">
+    <div id="art" class="art-fill"></div>
+    <div id="inscription"></div>
+    <div id="figure"></div>
+  </div>
   <header class="topbar">
     <span id="chapter"></span>
     <span class="spacer"></span>
     <button id="btn-journal" class="pill">旧事录</button>
     <button id="btn-menu" class="pill">菜单</button>
   </header>
-  <div id="stage">
-    <div id="art">
-      <div id="scene-name"></div>
-      <div id="scene-sub"></div>
-    </div>
-  </div>
   <div id="panel" data-kind="narration">
-    <div id="speaker" hidden></div>
+    <div id="speaker" class="seal" hidden></div>
     <div id="text"></div>
     <div id="choices"></div>
-    <div class="next">▼</div>
+    <div class="next">▾</div>
   </div>
 </section>
 <div id="toasts"></div>

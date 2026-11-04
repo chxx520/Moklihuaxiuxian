@@ -7,7 +7,7 @@ export type Cond = { key: string; op: "truthy" | "falsy" | "eq" | "neq"; value?:
 
 export type Item =
   | { t: "line"; speaker?: string; text: string; kind: "narration" | "dialogue" | "system"; cond?: Cond[] }
-  | { t: "scene"; name: string; sub?: string; cond?: Cond[] }
+  | { t: "scene"; name: string; sub?: string; mood?: string; variant?: string; cond?: Cond[] }
   | { t: "chapter"; text: string; cond?: Cond[] }
   | { t: "set"; key: string; value: Value; cond?: Cond[] }
   | { t: "spell"; name: string; cond?: Cond[] }
@@ -61,8 +61,9 @@ function parseLine(text: string, file: string, lineNo: number): Item {
 
   if (body.startsWith("->")) return { t: "goto", target: body.slice(2).trim(), cond };
   if (body.startsWith("@scene")) {
-    const [name, sub] = body.slice(6).split("|").map((s) => s.trim());
-    return { t: "scene", name, sub: sub || undefined, cond };
+    const [name, sub, look] = body.slice(6).split("|").map((s) => s.trim());
+    const [mood, variant] = (look ?? "").split("/").map((s) => s.trim());
+    return { t: "scene", name, sub: sub || undefined, mood: mood || undefined, variant: variant || undefined, cond };
   }
   if (body.startsWith("@chapter")) return { t: "chapter", text: body.slice(8).trim(), cond };
   if (body.startsWith("@end")) return { t: "end", text: body.slice(4).trim().replace(/\\n/g, "\n"), cond };

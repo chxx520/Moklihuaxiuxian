@@ -1,4 +1,5 @@
 // 界面层：实现 Presenter，负责把剧情显示到屏幕上并等待玩家操作。
+import { hasFigure, isMood, MOODS, renderFigure, renderScene } from "./art";
 import type { Presenter } from "./engine";
 
 export const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) =>
@@ -18,21 +19,10 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return e;
 }
 
-const PALETTES = [
-  ["#2b3a3a", "#516b63"], ["#3a2f2b", "#6d5848"], ["#2a3140", "#4d5d78"],
-  ["#33302a", "#6b6450"], ["#2f2a36", "#5b4f6b"], ["#28352c", "#4f6a55"],
-];
-
-function hash(s: string) {
-  let h = 0;
-  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return h;
-}
-
 export class DomPresenter implements Presenter {
   private art = $("#art");
-  private sceneName = $("#scene-name");
-  private sceneSub = $("#scene-sub");
+  private inscription = $("#inscription");
+  private figure = $("#figure");
   private chapterEl = $("#chapter");
   private panel = $("#panel");
   private speaker = $("#speaker");
@@ -41,6 +31,8 @@ export class DomPresenter implements Presenter {
   private toasts = $("#toasts");
   private advance: (() => void) | null = null;
   private typing: { finish: () => void; timer: number } | null = null;
+  private sceneKey = "";
+  private figureName = "";
   /** 统计跳过的对话，供试玩日志使用 */
   skipped = 0;
 
@@ -64,18 +56,48 @@ export class DomPresenter implements Presenter {
     });
   }
 
-  scene(name: string, sub?: string) {
-    const [a, b] = PALETTES[hash(name) % PALETTES.length];
-    this.art.style.background = `radial-gradient(120% 90% at 50% 30%, ${b} 0%, ${a} 70%, #15191b 100%)`;
-    this.sceneName.textContent = name;
-    this.sceneSub.textContent = sub ?? "";
-    this.art.classList.remove("fade");
-    void this.art.offsetWidth;
-    this.art.classList.add("fade");
+  scene(name: string, sub?: string, mood?: string, variant?: string) {
+    const m = isMood(mood) ? mood : "day";
+    const key = `${name}|${m}|${variant ?? ""}`;
+    if (key === this.sceneKey) return;
+    const samePlace = this.sceneKey.startsWith(name + "|");
+    this.sceneKey = key;
+
+    const layer = el("div", { class: "layer" });
+    layer.innerHTML = renderScene(name, m, variant);
+    this.art.append(layer);
+    requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add("in")));
+    const old = [...this.art.children].slice(0, -1);
+    setTimeout(() => old.forEach((o) => o.remove()), 1300);
+
+    $("#game").dataset.dark = String(MOODS[m].dark);
+    if (!samePlace) {
+      this.inscription.replaceChildren(
+        el("span", { class: "ins-name" }, name),
+        ...(sub ? [el("span", { class: "ins-sub" }, sub)] : []),
+      );
+      this.inscription.classList.remove("show");
+      void this.inscription.offsetWidth;
+      this.inscription.classList.add("show");
+      this.showFigure("");
+    }
   }
 
   chapter(text: string) {
     this.chapterEl.textContent = text;
+  }
+
+  private showFigure(name: string) {
+    if (name === this.figureName) return;
+    this.figureName = name;
+    const old = [...this.figure.children];
+    old.forEach((o) => o.classList.remove("in"));
+    setTimeout(() => old.forEach((o) => o.remove()), 450);
+    if (!name || !hasFigure(name)) return;
+    const f = el("div", { class: "fig" });
+    f.innerHTML = renderFigure(name);
+    this.figure.append(f);
+    requestAnimationFrame(() => requestAnimationFrame(() => f.classList.add("in")));
   }
 
   /** 切换存档或跳转时，取消正在进行的打字和等待 */
@@ -84,13 +106,22 @@ export class DomPresenter implements Presenter {
     this.typing = null;
     this.advance = null;
     this.choices.replaceChildren();
+    this.sceneKey = "";
+    this.showFigure("");
   }
 
   line(kind: "narration" | "dialogue" | "system", text: string, speaker?: string): Promise<void> {
-    this.reset();
+    if (this.typing) clearInterval(this.typing.timer);
+    this.typing = null;
+    this.advance = null;
+    this.choices.replaceChildren();
     this.panel.dataset.kind = kind;
     this.speaker.textContent = speaker ?? "";
     this.speaker.hidden = !speaker;
+    const hasFig = !!speaker && hasFigure(speaker);
+    if (hasFig) this.showFigure(speaker!);
+    this.figure.classList.toggle("idle", !hasFig);
+
     return new Promise((resolve) => {
       let i = 0;
       const chars = [...text];
@@ -107,7 +138,7 @@ export class DomPresenter implements Presenter {
         i += 1;
         this.text.textContent = chars.slice(0, i).join("");
         if (i >= chars.length) done();
-      }, 28);
+      }, 30);
       this.typing = { finish: done, timer };
     });
   }
@@ -118,7 +149,8 @@ export class DomPresenter implements Presenter {
     return new Promise((resolve) => {
       this.choices.replaceChildren(
         ...items.map((it, i) => {
-          const b = el("button", { class: `choice ${it.cls ?? ""}` }, it.label);
+          const b = el("button", { class: `choice ${it.cls ?? ""}` }, el("span", {}, it.label));
+          b.style.animationDelay = `${i * 70}ms`;
           b.addEventListener("click", (e) => {
             e.stopPropagation();
             this.choices.replaceChildren();
@@ -131,6 +163,7 @@ export class DomPresenter implements Presenter {
   }
 
   menu(options: string[]) {
+    this.figure.classList.add("idle");
     return this.buttons(options.map((label) => ({ label })));
   }
 
@@ -139,11 +172,9 @@ export class DomPresenter implements Presenter {
     this.speaker.hidden = true;
     this.speaker.textContent = "";
     this.text.textContent = "要查看哪里？";
+    this.showFigure("");
     return this.buttons(
-      spots.map((s) => ({
-        label: s.exit ? `${s.text} →` : `${s.seen ? "✓ " : "▸ "}${s.text}`,
-        cls: s.exit ? "exit" : s.seen ? "seen" : "",
-      })),
+      spots.map((s) => ({ label: s.text, cls: s.exit ? "exit" : s.seen ? "seen" : "spot" })),
     );
   }
 
@@ -151,7 +182,8 @@ export class DomPresenter implements Presenter {
     return new Promise<void>((resolve) => {
       const card = el("div", { class: "end-card" },
         el("div", { class: "end-text" }, text),
-        el("button", { class: "choice" }, "回到标题"),
+        el("span", { class: "seal big" }, "归山"),
+        el("button", { class: "choice" }, el("span", {}, "回到标题")),
       );
       card.querySelector("button")!.addEventListener("click", () => {
         card.remove();
@@ -162,9 +194,13 @@ export class DomPresenter implements Presenter {
   }
 
   toast(text: string) {
-    const t = el("div", { class: "toast" }, text);
+    const isSpell = text.startsWith("习得");
+    const t = el("div", { class: "toast" },
+      el("span", { class: "seal" }, isSpell ? "法" : "记"),
+      el("span", { class: "toast-text" }, text.replace(/^(记入旧事录|习得术法)：/, isSpell ? "习得 · " : "")),
+    );
     this.toasts.append(t);
-    setTimeout(() => t.classList.add("out"), 2200);
-    setTimeout(() => t.remove(), 2800);
+    setTimeout(() => t.classList.add("out"), 2600);
+    setTimeout(() => t.remove(), 3200);
   }
 }

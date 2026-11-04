@@ -1,0 +1,291 @@
+// 水墨风占位美术：用代码生成场景（远山、雾、宣纸纹理、前景器物）和人物剪影。
+// 正式美术到位后，只需要把 renderScene / renderFigure 换成图片即可。
+
+export type Mood = "dawn" | "day" | "dusk" | "night" | "snow" | "spring";
+
+const W = 390;
+const H = 560;
+
+type Palette = {
+  sky: [string, string];
+  ink: string;
+  far: string;
+  disc?: { color: string; opacity: number; x: number; y: number; r: number };
+  mist: number;
+  dark: boolean;
+  snow?: boolean;
+  blossom?: boolean;
+};
+
+export const MOODS: Record<Mood, Palette> = {
+  dawn: { sky: ["#eeeadf", "#e2dccd"], ink: "#344042", far: "#7d8a88", disc: { color: "#d99a78", opacity: 0.35, x: 280, y: 150, r: 34 }, mist: 0.9, dark: false },
+  day: { sky: ["#f2eee2", "#e4dcc8"], ink: "#2c3638", far: "#8a9290", mist: 0.7, dark: false },
+  dusk: { sky: ["#f0e3cf", "#d8c1a1"], ink: "#352e2a", far: "#9b8673", disc: { color: "#b5452e", opacity: 0.6, x: 300, y: 205, r: 28 }, mist: 0.6, dark: false },
+  night: { sky: ["#2b323a", "#171b20"], ink: "#07090b", far: "#3d4750", disc: { color: "#ebe4cf", opacity: 0.85, x: 90, y: 120, r: 22 }, mist: 0.22, dark: true },
+  snow: { sky: ["#eef0ee", "#dde2e1"], ink: "#3a4448", far: "#a5adae", mist: 0.8, dark: false, snow: true },
+  spring: { sky: ["#f2efe2", "#e2e4cd"], ink: "#2c3830", far: "#8c9a86", mist: 0.75, dark: false, blossom: true },
+};
+
+export function isMood(s: string | undefined): s is Mood {
+  return !!s && s in MOODS;
+}
+
+function rng(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hash(s: string) {
+  let h = 2166136261;
+  for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  return h;
+}
+
+let uid = 0;
+
+/** 一道山脊：尖峰由 |sin| 叠加，山脚渐隐进雾里 */
+function ridge(r: () => number, base: number, amp: number, color: string, opacity: number, blur = 0) {
+  const id = `g${++uid}`;
+  const p1 = r() * 10, p2 = r() * 10;
+  const f1 = 0.006 + r() * 0.008, f2 = 0.018 + r() * 0.02, f3 = 0.05 + r() * 0.04;
+  let d = `M-20 ${H} L-20 ${base}`;
+  let top = base;
+  for (let x = -20; x <= W + 20; x += 5) {
+    const y = base - amp * (0.62 * Math.abs(Math.sin(x * f1 + p1)) ** 1.6 + 0.3 * Math.abs(Math.sin(x * f2 + p2)) + 0.08 * Math.sin(x * f3));
+    top = Math.min(top, y);
+    d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  d += ` L${W + 20} ${H} Z`;
+  return `<linearGradient id="${id}" x1="0" y1="${top}" x2="0" y2="${base + 70}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="${color}" stop-opacity="${opacity}"/>
+      <stop offset="0.55" stop-color="${color}" stop-opacity="${opacity * 0.55}"/>
+      <stop offset="1" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient>
+    <path d="${d}" fill="url(#${id})" ${blur ? `filter="url(#blur${blur})"` : 'filter="url(#ink)"'}/>`;
+}
+
+function mist(p: Palette, y: number, i: number) {
+  const c = p.dark ? "#8a96a0" : "#ffffff";
+  return `<g class="mist m${i % 3}"><ellipse cx="${W / 2}" cy="${y}" rx="${W * 0.9}" ry="26" fill="${c}" opacity="${p.mist * 0.55}" filter="url(#blur8)"/></g>`;
+}
+
+// ———— 前景器物 ————
+
+function hall(ink: string) {
+  return `<g filter="url(#ink)" fill="${ink}">
+    <path d="M30 352 Q66 346 96 322 L294 322 Q324 346 360 352 Q300 357 195 357 Q90 357 30 352 Z"/>
+    <path d="M96 322 Q130 296 152 284 L238 284 Q260 296 294 322 Z" opacity="0.92"/>
+    <path d="M138 286 L252 286 L256 278 L134 278 Z"/>
+    <path d="M128 280 q-6 -10 2 -16 M262 280 q6 -10 -2 -16" stroke="${ink}" stroke-width="5" fill="none"/>
+    <rect x="92" y="357" width="206" height="92" opacity="0.38"/>
+    <rect x="98" y="357" width="9" height="92"/><rect x="150" y="357" width="8" height="92"/>
+    <rect x="232" y="357" width="8" height="92"/><rect x="283" y="357" width="9" height="92"/>
+    <rect x="170" y="372" width="50" height="77" opacity="0.8"/>
+    <rect x="182" y="330" width="26" height="18" fill="#a8443a" opacity="0.9"/>
+    <path d="M70 449 L320 449 L336 470 L54 470 Z" opacity="0.55"/>
+    <path d="M40 470 L350 470 L370 492 L20 492 Z" opacity="0.4"/>
+  </g>`;
+}
+
+function roundWindow(ink: string, lamp: boolean) {
+  // 符堂内部：墙上一扇圆窗，透出远山；一盏灯
+  return `<defs><mask id="win"><rect width="${W}" height="${H}" fill="white"/><circle cx="195" cy="230" r="128" fill="black"/></mask></defs>
+    <rect width="${W}" height="${H}" fill="${ink}" opacity="0.86" mask="url(#win)"/>
+    <circle cx="195" cy="230" r="128" fill="none" stroke="${ink}" stroke-width="10" filter="url(#ink)"/>
+    <g stroke="${ink}" stroke-width="3" opacity="0.7"><line x1="195" y1="102" x2="195" y2="358"/><line x1="67" y1="230" x2="323" y2="230"/></g>
+    <g fill="#d8cfbb" opacity="0.16">${[0, 1, 2, 3].map((i) => `<rect x="${24 + i * 6}" y="${400 + i * 34}" width="${110 - i * 12}" height="6"/>`).join("")}</g>
+    ${lamp ? `<circle cx="318" cy="420" r="60" fill="#e9a45a" opacity="0.22" filter="url(#blur8)"/><rect x="310" y="404" width="16" height="26" rx="4" fill="#e0b070" opacity="0.85"/>` : ""}`;
+}
+
+function hut(ink: string, r: () => number) {
+  let bamboo = "";
+  for (let i = 0; i < 9; i++) {
+    const x = i < 4 ? 14 + i * 20 + r() * 8 : 290 + (i - 4) * 18 + r() * 8;
+    const top = 60 + r() * 120;
+    let seg = "";
+    for (let y = top + 30; y < 520; y += 34 + r() * 10) seg += `<rect x="${x - 4}" y="${y}" width="9" height="2" opacity="0.9"/>`;
+    const leaves = [0, 1, 2].map(() => {
+      const ly = top + r() * 140, dir = r() > 0.5 ? 1 : -1;
+      return `<path d="M${x} ${ly} q${dir * 18} -4 ${dir * 36} 6 q${-dir * 18} 2 ${-dir * 36} -6 Z"/>`;
+    }).join("");
+    bamboo += `<g opacity="${0.55 + r() * 0.4}"><rect x="${x - 3}" y="${top}" width="6" height="${520 - top}"/>${seg}${leaves}</g>`;
+  }
+  return `<g filter="url(#ink)" fill="${ink}">
+    ${bamboo}
+    <path d="M110 372 Q150 330 195 316 Q240 330 280 372 Q240 368 195 368 Q150 368 110 372 Z"/>
+    <rect x="128" y="370" width="134" height="86" opacity="0.42"/>
+    <rect x="178" y="388" width="34" height="68" opacity="0.85"/>
+    <rect x="140" y="386" width="26" height="22" opacity="0.7"/>
+    <path d="M60 456 L330 456 L350 480 L40 480 Z" opacity="0.45"/>
+  </g>`;
+}
+
+function locust(ink: string, r: () => number) {
+  let canopy = "";
+  for (let i = 0; i < 34; i++) {
+    const a = r() * Math.PI * 2, d = r() * 110;
+    const cx = 110 + Math.cos(a) * d * 1.2, cy = 170 + Math.sin(a) * d * 0.62;
+    canopy += `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(16 + r() * 26).toFixed(0)}" opacity="${(0.25 + r() * 0.5).toFixed(2)}"/>`;
+  }
+  const roofs = [0, 1, 2].map((i) => {
+    const x = 230 + i * 48, y = 372 - i * 6;
+    return `<path d="M${x} ${y} l22 -14 l22 14 Z" opacity="0.5"/><rect x="${x + 4}" y="${y}" width="36" height="18" opacity="0.3"/>`;
+  }).join("");
+  return `<g filter="url(#ink)" fill="${ink}">
+    ${roofs}
+    <g filter="url(#blur2)">${canopy}</g>
+    <path d="M86 470 C96 400 70 330 100 250 C108 230 120 226 124 240 C118 300 140 380 150 470 Z"/>
+    <path d="M104 262 C80 230 58 214 30 210 M118 252 C150 214 180 200 214 196 M110 300 C86 286 62 286 44 292" stroke="${ink}" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M150 470 C200 440 240 420 300 410 L330 412 C270 430 220 450 196 480 Z" opacity="0.28"/>
+    <path d="M0 470 L390 470 L390 520 L0 520 Z" opacity="0.4"/>
+    <ellipse cx="152" cy="468" rx="16" ry="6" opacity="0.7"/>
+  </g>`;
+}
+
+function gate(ink: string, state: string) {
+  // 温家旧门：正面，门楣铜镜，门上黄符
+  const blackened = state === "black";
+  const talisman = blackened ? "#4a4236" : "#e3c873";
+  const torn = state === "torn" ? `<path d="M222 392 l14 0 l-6 20 l-10 -4 Z" fill="#f0e3cf"/>` : "";
+  return `<g>
+    <g filter="url(#ink)" fill="${ink}">
+      <path d="M0 300 L18 296 L30 306 L52 298 L60 330 L74 322 L80 470 L0 470 Z" opacity="0.5"/>
+      <path d="M390 310 L366 304 L352 316 L330 306 L318 470 L390 470 Z" opacity="0.5"/>
+      <path d="M68 238 Q195 214 322 238 L330 252 Q195 236 60 252 Z"/>
+      <rect x="86" y="250" width="218" height="26" opacity="0.92"/>
+      <rect x="92" y="276" width="16" height="196"/><rect x="282" y="276" width="16" height="196"/>
+      <rect x="110" y="282" width="84" height="190" opacity="0.66"/>
+      <rect x="196" y="282" width="84" height="190" opacity="0.66"/>
+      <path d="M150 320 h8 M150 380 h8 M150 440 h8 M232 320 h8 M232 380 h8 M232 440 h8" stroke="${ink}" stroke-width="6" opacity="0.8"/>
+      <path d="M50 470 L340 470 L360 496 L30 496 Z" opacity="0.45"/>
+    </g>
+    <circle cx="195" cy="263" r="15" fill="#b9b3a3" stroke="#5d5444" stroke-width="3"/>
+    <circle cx="195" cy="263" r="22" fill="#e8e0c8" opacity="${state === "glow" ? 0.55 : 0.12}" filter="url(#blur8)" class="${state === "glow" ? "pulse" : ""}"/>
+    <g transform="rotate(-2 222 360)">
+      <rect x="202" y="320" width="40" height="92" fill="${talisman}" opacity="0.95"/>
+      <path d="M212 332 q10 6 0 14 q12 4 2 14 M226 330 v40 M218 380 q8 -6 14 2 q-6 8 -14 6" stroke="${blackened ? "#1d1a16" : "#a8443a"}" stroke-width="2.6" fill="none"/>
+      ${torn}
+    </g>
+  </g>`;
+}
+
+function pine(ink: string, r: () => number) {
+  // 崖边一棵松：斜干，几簇扁平的松针团
+  let tiers = "";
+  const tiersAt = [[268, 300], [318, 262], [244, 252], [300, 222]];
+  for (const [cx, cy] of tiersAt) {
+    for (let k = 0; k < 6; k++) {
+      const x = cx + (r() - 0.5) * 50, y = cy + (r() - 0.5) * 10;
+      tiers += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(18 + r() * 16).toFixed(0)}" ry="${(5 + r() * 4).toFixed(0)}" opacity="${(0.55 + r() * 0.4).toFixed(2)}"/>`;
+    }
+  }
+  return `<g filter="url(#ink)" fill="${ink}" transform="translate(16 120)">
+    <path d="M390 380 L330 396 Q290 420 262 470 L250 560 L390 560 Z" opacity="0.8"/>
+    <path d="M300 400 C296 360 278 330 290 300 C296 280 312 262 330 250 L334 254 C318 270 304 290 300 310 C298 340 312 370 310 400 Z"/>
+    <path d="M296 318 C280 312 262 306 246 304 M306 280 C292 262 276 256 262 254" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <g filter="url(#blur2)">${tiers}</g>
+    <path d="M70 150 q8 -6 14 0 q6 -6 14 0 M120 176 q6 -4 10 0 q4 -4 10 0" stroke="${ink}" stroke-width="2" fill="none" opacity="0.6"/>
+  </g>`;
+}
+
+function snowfall(r: () => number) {
+  let s = "";
+  for (let i = 0; i < 60; i++) s += `<circle cx="${(r() * W).toFixed(0)}" cy="${(r() * H).toFixed(0)}" r="${(0.8 + r() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.5 + r() * 0.5).toFixed(2)}"/>`;
+  return `<g class="snow">${s}</g>`;
+}
+
+function blossoms(r: () => number) {
+  let s = "";
+  for (let i = 0; i < 26; i++) s += `<circle cx="${(r() * W).toFixed(0)}" cy="${(r() * 320).toFixed(0)}" r="${(1.6 + r() * 2.2).toFixed(1)}" fill="#d9a3a0" opacity="${(0.4 + r() * 0.4).toFixed(2)}"/>`;
+  return `<g class="petals">${s}</g>`;
+}
+
+/** 场景名 → 前景构图。未登记的场景只画远山和松。 */
+const PROPS: Record<string, (ink: string, r: () => number, variant: string) => string> = {
+  符堂外: (ink) => hall(ink),
+  符堂: (ink) => roundWindow(ink, true),
+  竹屋前: (ink, r) => hut(ink, r),
+  槐荫村口: (ink, r) => locust(ink, r),
+  温家旧门: (ink, _r, v) => gate(ink, v || "torn"),
+};
+
+/** 生成完整场景 SVG。variant 用于同一地点的不同状态（如护符破损 / 发黑）。 */
+function scope(svg: string, pre: string) {
+  return svg.replace(/id="([\w]+)"/g, `id="${pre}$1"`).replace(/url\(#(\w+)\)/g, `url(#${pre}$1)`);
+}
+
+export function renderScene(name: string, mood: Mood = "day", variant = ""): string {
+  return scope(sceneSvg(name, mood, variant), `s${++uid}_`);
+}
+
+function sceneSvg(name: string, mood: Mood, variant: string): string {
+  const p = MOODS[mood];
+  const r = rng(hash(name));
+  const interior = name === "符堂";
+  const prop = PROPS[name]?.(p.ink, rng(hash(name) + 7), variant) ?? pine(p.ink, rng(hash(name) + 7));
+  const d = p.disc;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.sky[0]}"/><stop offset="1" stop-color="${p.sky[1]}"/></linearGradient>
+    <filter id="ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="blur8" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="8"/><feColorMatrix values="0 0 0 0 0.3  0 0 0 0 0.26  0 0 0 0 0.2  0 0 0 0.09 0"/></filter>
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#sky)"/>
+  ${d ? `<circle cx="${d.x}" cy="${d.y}" r="${d.r}" fill="${d.color}" opacity="${d.opacity}"/>` : ""}
+  ${ridge(r, 250, 120, p.far, 0.55, 4)}
+  ${mist(p, 262, 0)}
+  ${ridge(r, 320, 110, p.far, 0.8, 2)}
+  ${mist(p, 330, 1)}
+  ${ridge(r, 400, 90, p.ink, p.dark ? 0.9 : 0.55)}
+  ${mist(p, 410, 2)}
+  ${prop}
+  ${p.snow ? snowfall(r) : ""}
+  ${p.blossom ? blossoms(r) : ""}
+  <rect width="${W}" height="${H}" filter="url(#paper)"/>
+</svg>`;
+}
+
+// ———— 人物剪影 ————
+// 每个人物一个 120×300 的剪影，用身形和标志物区分。
+
+const FIG: Record<string, string> = {
+  顾长庚: `<path d="M60 22 q-6 -14 2 -18 q8 4 2 18 Z"/><ellipse cx="60" cy="42" rx="15" ry="18"/>
+    <path d="M52 56 q8 30 0 52 q8 -6 16 0 q-8 -22 0 -52 Z" opacity="0.7"/>
+    <path d="M44 64 Q30 70 26 110 L18 290 L102 290 L94 110 Q90 70 76 64 Q60 76 44 64 Z"/>
+    <path d="M26 150 Q60 172 94 150 L96 176 Q60 196 24 176 Z" opacity="0.6"/>`,
+  陆青棠: `<ellipse cx="60" cy="22" rx="12" ry="9"/><path d="M66 18 l26 -12" stroke="currentColor" stroke-width="3"/>
+    <ellipse cx="60" cy="44" rx="13" ry="16"/>
+    <path d="M47 62 Q38 70 36 104 L28 290 L92 290 L84 104 Q82 70 73 62 Q60 72 47 62 Z"/>
+    <path d="M36 118 Q22 150 20 196 L36 200 Q40 160 46 128 Z M84 118 Q96 140 100 170 L84 176 Z" opacity="0.75"/>
+    <rect x="88" y="150" width="20" height="28" transform="rotate(8 98 164)" fill="#e3c873" opacity="0.9"/>`,
+  温小满: `<ellipse cx="54" cy="150" rx="5" ry="6"/><ellipse cx="66" cy="150" rx="5" ry="6"/><ellipse cx="60" cy="167" rx="13" ry="14"/>
+    <path d="M48 182 Q40 188 38 214 L32 290 L88 290 L82 214 Q80 188 72 182 Q60 190 48 182 Z"/>`,
+  温阿婆: `<path d="M44 92 Q58 72 76 84 Q84 96 78 112 Q60 118 46 108 Z"/>
+    <path d="M50 110 Q36 120 34 160 Q30 220 30 290 L88 290 Q86 210 80 160 Q78 126 70 114 Z"/>
+    <path d="M86 150 L104 290" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <path d="M70 140 Q86 146 90 152" stroke="currentColor" stroke-width="8" stroke-linecap="round" fill="none"/>`,
+};
+
+export function hasFigure(name: string) {
+  return name in FIG;
+}
+
+export function renderFigure(name: string): string {
+  const body = FIG[name];
+  if (!body) return "";
+  return scope(`<svg viewBox="0 0 120 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+    <defs><filter id="fink"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="5"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <linearGradient id="ffade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.7" stop-color="white"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+    <mask id="fmask"><rect width="120" height="300" fill="url(#ffade)"/></mask></defs>
+    <g fill="currentColor" color="currentColor" filter="url(#fink)" mask="url(#fmask)">${body}</g>
+  </svg>`, `f${++uid}_`);
+}

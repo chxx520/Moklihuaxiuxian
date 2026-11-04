@@ -2,6 +2,7 @@
 import { Engine, GameState, newState } from "./engine";
 import { lintStory, parseStory, parseValue } from "./parser";
 import { clearAuto, loadSaves } from "./save";
+import { renderScene } from "./art";
 import { $, DomPresenter, el } from "./ui";
 // @ts-ignore 由构建脚本注入：{ 文件名: 剧本文本 }
 import storyFiles from "virtual:story";
@@ -125,6 +126,7 @@ function toTitle(finished = false) {
 
 function boot() {
   presenter = new DomPresenter();
+  $("#title-art").innerHTML = renderScene("归山", "dawn");
   $("#version").textContent = `原型 ${__BUILD__}`;
   $("#btn-new").addEventListener("click", async () => {
     const name = await askName();

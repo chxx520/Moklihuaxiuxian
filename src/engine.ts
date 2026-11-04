@@ -11,13 +11,13 @@ export type GameState = {
   clues: { key: string; text: string }[];
   spells: string[];
   goal?: string;
-  scene?: { name: string; sub?: string };
+  scene?: { name: string; sub?: string; mood?: string; variant?: string };
   chapter?: string;
   savedAt: number;
 };
 
 export interface Presenter {
-  scene(name: string, sub?: string): void;
+  scene(name: string, sub?: string, mood?: string, variant?: string): void;
   chapter(text: string): void;
   line(kind: "narration" | "dialogue" | "system", text: string, speaker?: string): Promise<void>;
   menu(options: string[]): Promise<number>;
@@ -58,7 +58,8 @@ export class Engine {
   /** 从 state.node 开始运行，直到遇到 @end 或被停止。 */
   async run() {
     let nodeId: string | null = this.state.node;
-    if (this.state.scene) this.ui.scene(this.state.scene.name, this.state.scene.sub);
+    const sc = this.state.scene;
+    if (sc) this.ui.scene(sc.name, sc.sub, sc.mood, sc.variant);
     if (this.state.chapter) this.ui.chapter(this.state.chapter);
 
     while (nodeId && !this.stopped) {
@@ -84,8 +85,8 @@ export class Engine {
           await this.ui.line(it.kind, this.fmt(it.text), it.speaker && this.fmt(it.speaker));
           break;
         case "scene":
-          s.scene = { name: it.name, sub: it.sub };
-          this.ui.scene(it.name, it.sub);
+          s.scene = { name: it.name, sub: it.sub, mood: it.mood, variant: it.variant };
+          this.ui.scene(it.name, it.sub, it.mood, it.variant);
           break;
         case "chapter":
           s.chapter = it.text;

@@ -24,6 +24,12 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: 缓存字体（霞鹜文楷原始文件）
+        uses: actions/cache@v4
+        with:
+          path: fonts
+          key: lxgw-wenkai-v1.520
+
       - name: 构建网页内核并检查剧本
         run: |
           npm ci
