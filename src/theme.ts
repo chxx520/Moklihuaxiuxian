@@ -55,18 +55,26 @@ const BRUSH = svg(`
     <ellipse cx='260' cy='320' rx='200' ry='160'/><ellipse cx='760' cy='700' rx='220' ry='180'/>
   </g>`.replace(/%23/g, "#"), "0 0 1000 1000");
 
+/** 界面皮肤：assets/ui/ 里有对应素材就用素材，没有就用代码画的版本 */
+const SKIN: [string, string, string?][] = [
+  // [CSS 变量, 素材文件名, 代码版回退]
+  ["--frame", "面板边框", FRAME], ["--frame-thin", "细边框", FRAME_THIN], ["--plaque", "牌匾", PLAQUE],
+  ["--ui-dialog", "对话框"], ["--ui-panel", "面板底"], ["--ui-topbar", "顶栏"], ["--ui-dock", "底栏"],
+  ["--ui-btn-red", "按钮_朱漆"], ["--ui-btn-jade", "按钮_青玉"], ["--ui-btn-gold", "按钮_鎏金"], ["--ui-btn-round", "按钮_圆"],
+  ["--ui-namebar", "名牌"], ["--ui-card", "卡牌"], ["--ui-choice", "选项"], ["--ui-bar-frame", "进度条框"],
+  ["--ui-realm", "境界徽章"], ["--ui-map-frame", "舆图框"], ["--ui-title-logo", "标题字"], ["--ui-loading", "加载背景"], ["--ui-divider", "分隔线"],
+];
+
 export function installTheme() {
-  const r = document.documentElement.style;
-  const ui = (key: string, fallback: string) => {
-    const f = findAsset("ui", key);
-    return f ? `url("${f}")` : fallback;
-  };
-  r.setProperty("--frame", ui("边框", FRAME));
-  r.setProperty("--frame-thin", ui("细边框", FRAME_THIN));
-  r.setProperty("--plaque", ui("牌匾", PLAQUE));
-  r.setProperty("--clouds", CLOUDS);
-  r.setProperty("--paper-tex", PAPER);
-  r.setProperty("--brush", BRUSH);
+  const r = document.documentElement;
+  for (const [v, file, fallback] of SKIN) {
+    const f = findAsset("ui", file);
+    if (f) { r.style.setProperty(v, `url("${f}")`); r.classList.add(`skin-${file}`); }
+    else if (fallback) r.style.setProperty(v, fallback);
+  }
+  r.style.setProperty("--clouds", CLOUDS);
+  r.style.setProperty("--paper-tex", PAPER);
+  r.style.setProperty("--brush", BRUSH);
   installRipple();
 }
 

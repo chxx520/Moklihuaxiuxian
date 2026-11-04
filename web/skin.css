@@ -1,0 +1,41 @@
+/* ═══════════ 手绘界面皮肤：assets/ui/ 里有素材时自动生效 ═══════════
+   九宫格素材统一按 33% 切片；横向按钮按左右 46% 切片（两端装饰不拉伸，中间拉伸）。 */
+
+/* 面板边框（九宫格） */
+.skin-面板边框 .ornate, .skin-面板边框 .sheet, .skin-面板边框 .map-info, .skin-面板边框 .cr-panel, .skin-面板边框 .gather-fx, .skin-面板边框 .b-tip, .skin-面板边框 .cg-cap {
+  border-image: var(--frame) 33% fill / 28px / 4px stretch !important; border-width: 28px !important; background: none !important;
+}
+.skin-面板底 .sheet, .skin-面板底 .cr-panel { background: var(--ui-panel) center / 100% 100% no-repeat !important; border-image: none !important; border: 0 !important; padding: 42px 30px 30px !important; }
+
+/* 对话框：整张手绘底图 */
+.skin-对话框 #panel { border: 0 !important; border-image: none !important; background: var(--ui-dialog) center / 100% 100% no-repeat !important; padding: 34px 30px 26px !important; min-height: 31vh; box-shadow: none !important; }
+.skin-名牌 #speaker { background: var(--ui-namebar) center / 100% 100% no-repeat !important; min-width: 140px; height: 42px; }
+.skin-牌匾 #chapter, .skin-牌匾 .sheet h2, .skin-牌匾 .realm-plaque, .skin-牌匾 .map-title, .skin-牌匾 .cr-title, .skin-牌匾 .b-title .seal, .skin-牌匾 .turn-banner span { background-image: var(--plaque) !important; }
+
+/* 按钮 */
+.skin-按钮_朱漆 .btn-primary, .skin-按钮_朱漆 .title-buttons .choice, .skin-按钮_朱漆 .sheet-actions .choice:first-child, .skin-按钮_朱漆 .b-end, .skin-按钮_朱漆 .b-result .choice, .skin-按钮_朱漆 .draw .choice, .skin-按钮_朱漆 .end-card .choice {
+  border: 0 !important; border-image: none !important; background: var(--ui-btn-red) center / 100% 100% no-repeat !important; box-shadow: none !important; min-height: 56px; padding: 10px 36px !important;
+}
+.skin-选项 .choice:not(.btn-primary):not(.b-end) { border: 0 !important; border-image: none !important; background: var(--ui-choice) center / 100% 100% no-repeat !important; box-shadow: none !important; padding: 12px 34px !important; min-height: 58px; }
+.skin-选项 .choice::before { display: none !important; }
+.skin-按钮_青玉 .act-btn, .skin-按钮_青玉 .cr-tab, .skin-按钮_青玉 .shop-tabs .tab { border: 0 !important; border-image: none !important; background: var(--ui-btn-jade) center / 100% 100% no-repeat !important; box-shadow: none !important; padding: 12px 30px !important; }
+.skin-按钮_鎏金 .act-btn.a-event, .skin-按钮_鎏金 .break-btn { background: var(--ui-btn-gold) center / 100% 100% no-repeat !important; border: 0 !important; border-image: none !important; }
+.skin-按钮_圆 .nav-ic { background: var(--ui-btn-round) center / 100% 100% no-repeat !important; border: 0 !important; box-shadow: none !important; width: 56px; height: 56px; }
+.skin-按钮_圆 .nav-ic.sprite { background-image: var(--nav-sheet-img), var(--ui-btn-round) !important; }
+
+/* 主界面顶栏与底栏 */
+.skin-顶栏 .hub-top { background: var(--ui-topbar) center top / 100% 100% no-repeat; padding-bottom: 18px; }
+.skin-底栏 .hub-nav { background: var(--ui-dock) center bottom / 100% 100% no-repeat; border-top: 0; padding-top: 26px; }
+.skin-进度条框 .xp-bar { box-shadow: none; border: 10px solid transparent; border-image: var(--ui-bar-frame) 0 12% fill / 10px 18px stretch; }
+.skin-境界徽章 .realm-plaque { background: var(--ui-realm) center / 100% 100% no-repeat !important; min-width: 128px; height: 64px; }
+
+/* 卡牌 */
+.skin-卡牌 .card, .skin-卡牌 .act, .skin-卡牌 .bag-cell, .skin-卡牌 .root-card, .skin-卡牌 .spell-cell, .skin-卡牌 .tech-card {
+  border: 0 !important; border-image: none !important; background: var(--ui-card) center / 100% 100% no-repeat !important; box-shadow: none !important; padding: 12px 10px !important;
+}
+
+/* 舆图框、标题字、加载背景、分隔线 */
+.skin-舆图框 .map-board { border: 0; border-image: none; background-color: transparent; }
+.skin-舆图框 .map-board::after { content: ""; position: absolute; inset: 0; background: var(--ui-map-frame) center / 100% 100% no-repeat; pointer-events: none; z-index: 4; }
+.skin-标题字 #title h1 { color: transparent; text-shadow: none; background: var(--ui-title-logo) center / contain no-repeat; width: 170px; height: 300px; writing-mode: horizontal-tb; font-size: 0; }
+.skin-分隔线 .sheet h3::before { content: ""; display: inline-block; width: 60px; height: 14px; background: var(--ui-divider) center / contain no-repeat; }
