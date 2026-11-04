@@ -7,10 +7,12 @@ let ctx: AudioContext | null = null;
 let master: GainNode;
 let musicBus: GainNode;
 let sfxBus: GainNode;
+let ambBus: GainNode;
 let reverb: ConvolverNode;
 
 let unlocked = false;
 let pendingMusic = "";
+let pendingAmb = "";
 
 function ensure() {
   if (ctx) return ctx;
@@ -22,6 +24,8 @@ function ensure() {
   master.connect(ctx.destination);
   musicBus = ctx.createGain();
   sfxBus = ctx.createGain();
+  ambBus = ctx.createGain();
+  ambBus.connect(master);
   reverb = ctx.createConvolver();
   reverb.buffer = impulse(ctx, 3.2);
   const wet = ctx.createGain();
@@ -40,6 +44,7 @@ export function applyVolume() {
   const s = getSettings();
   musicBus.gain.value = s.music * 0.55;
   sfxBus.gain.value = s.sfx * 0.8;
+  ambBus.gain.value = s.sfx * 0.6;
   if (fileAudio) fileAudio.volume = s.music;
 }
 
@@ -49,6 +54,8 @@ export function unlockAudio() {
   unlocked = true;
   const c = ensure();
   if (c && c.state === "suspended") void c.resume();
+  if (first) preloadSfx();
+  if (first && pendingAmb) { const a = pendingAmb; pendingAmb = ""; ambName = ""; setAmbience(a); }
   if (first && pendingMusic) {
     const m = pendingMusic;
     pendingMusic = "";
@@ -160,6 +167,104 @@ function bell(freq: number, when: number, vol: number, bus?: GainNode) {
   [1, 2.76, 5.4, 8.93].forEach((m, i) => tone(freq * m, when, 4.5 / (i + 1), vol / (i + 1.5), "sine", bus));
 }
 
+// ———— 录音音效（assets/sfx，CC BY 4.0，见游戏内「致谢」） ————
+
+const SAMPLE_OF: Record<string, string> = {
+  page: "确认", open: "打开", close: "关闭", back: "返回", miss: "出错", tip: "提示", get: "获得", fade: "消散",
+  power: "强化", count: "计数", block: "木击", cast: "施法", light: "施法", whoosh: "飞出", whoosh2: "重飞", swing: "挥动",
+  hit: "命中", burst: "重击", thud: "命中", cloth: "衣动", win: "胜利", lose: "失败", breakthrough: "突破", levelup: "升级",
+  book: "翻书", tear: "撕纸", creak: "木门吱", summon: "惊", crack: "撕纸",
+};
+const VOL: Record<string, number> = { page: 0.5, open: 0.55, close: 0.5, back: 0.5, miss: 0.6, tip: 0.5, get: 0.7, cast: 0.6, light: 0.5, whoosh: 0.6, whoosh2: 0.7, hit: 0.75, burst: 0.9, thud: 0.65, block: 0.5, win: 0.8, lose: 0.7, breakthrough: 0.9, levelup: 0.8, book: 0.5, creak: 0.6, summon: 0.5, cloth: 0.4, crack: 0.6, count: 0.4 };
+
+const buffers = new Map<string, AudioBuffer | null>();
+const loading = new Map<string, Promise<AudioBuffer | null>>();
+
+function loadSample(file: string): Promise<AudioBuffer | null> {
+  const c = ensure();
+  if (!c) return Promise.resolve(null);
+  const hit = loading.get(file);
+  if (hit) return hit;
+  const url = findAsset("sfx", file);
+  const p = !url
+    ? Promise.resolve(null)
+    : fetch(url).then((r) => r.arrayBuffer()).then((b) => new Promise<AudioBuffer>((res, rej) => c.decodeAudioData(b, res, rej))).catch(() => null);
+  p.then((b) => buffers.set(file, b));
+  loading.set(file, p);
+  return p;
+}
+
+/** 预先解码常用音效，避免第一次播放时延迟 */
+export function preloadSfx() {
+  ["确认", "打开", "关闭", "出错", "获得", "施法", "飞出", "命中", "重击", "木击"].forEach((f) => void loadSample(f));
+}
+
+function playSample(file: string, vol: number, rate = 1): boolean {
+  const c = ensure();
+  if (!c) return false;
+  const buf = buffers.get(file);
+  if (buf === undefined) { void loadSample(file); return false; }
+  if (!buf) return false;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.value = rate * (0.96 + Math.random() * 0.08);
+  const g = c.createGain();
+  g.gain.value = vol;
+  src.connect(g).connect(sfxBus);
+  src.start();
+  return true;
+}
+
+// ———— 环境音（随场景自动切换，交叉淡入淡出） ————
+
+let ambName = "";
+let ambNode: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+
+export function setAmbience(name: string) {
+  if (!unlocked) { pendingAmb = name; return; }
+  if (name === ambName) return;
+  ambName = name;
+  const c = ensure();
+  const old = ambNode;
+  ambNode = null;
+  if (old && c) {
+    old.gain.gain.cancelScheduledValues(c.currentTime);
+    old.gain.gain.setValueAtTime(old.gain.gain.value, c.currentTime);
+    old.gain.gain.linearRampToValueAtTime(0, c.currentTime + 1.6);
+    old.src.stop(c.currentTime + 1.7);
+  }
+  if (!c || !name) return;
+  void loadSample(name).then((buf) => {
+    if (!buf || ambName !== name || !ctx) return;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    // 去掉压缩格式首尾的静音，避免循环时有空隙
+    src.loopStart = Math.min(0.08, buf.duration / 4);
+    src.loopEnd = Math.max(src.loopStart + 0.5, buf.duration - 0.08);
+    const g = ctx.createGain();
+    g.gain.value = 0;
+    g.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 2);
+    src.connect(g).connect(ambBus);
+    src.start(ctx.currentTime, src.loopStart);
+    ambNode = { src, gain: g };
+  });
+}
+
+/** 按场景推断环境音 */
+export function ambienceFor(name: string, mood: string, image = ""): string {
+  const k = name + image;
+  if (k.includes("雨")) return /屋|内/.test(k) ? "环境_屋雨" : "环境_雨";
+  if (/渡/.test(k)) return mood === "night" ? "环境_岸" : "环境_河";
+  if (/镜中/.test(k)) return "环境_暗涌";
+  if (/雾隐林|溪/.test(k)) return "环境_溪";
+  if (/符堂_内|符堂$|祠堂|西屋|竹屋内|闭关/.test(k) && !k.includes("外")) return mood === "night" ? "环境_夜虫" : "环境_室内";
+  if (mood === "night") return "环境_夜虫";
+  if (/槐荫村|青石镇/.test(k) && mood !== "dusk") return "环境_村";
+  if (/竹屋/.test(k)) return "环境_风铃";
+  return "环境_风林";
+}
+
 // ———— 音效 ————
 
 export type Sfx = "tap" | "brush" | "seal" | "hit" | "burst" | "shield" | "light" | "sense" | "thud" | "block" | "summon" | "miss" | "crack" | "knock" | "bell" | "page" | "wind";
@@ -167,6 +272,11 @@ export type Sfx = "tap" | "brush" | "seal" | "hit" | "burst" | "shield" | "light
 export function sfx(name: Sfx | string) {
   const c = ensure();
   if (!c || getSettings().sfx <= 0) return;
+  const sample = SAMPLE_OF[name];
+  if (sample && playSample(sample, VOL[name] ?? 0.6)) {
+    if (name === "burst" || name === "thud") tone(70, c.currentTime, 0.3, 0.3, "sine");
+    return;
+  }
   const t = c.currentTime + 0.01;
   switch (name) {
     case "tap": tone(880, t, 0.06, 0.05, "triangle"); break;

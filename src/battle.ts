@@ -384,7 +384,10 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
             )
           : "";
 
-        const log = el("div", { class: "b-log" }, ...b.log.map((t) => el("div", {}, t)));
+        // 选中术法时，记录框里显示术法说明（不另占位置，布局不跳）
+        const log = pending
+          ? el("div", { class: "b-log hint" }, el("div", {}, pending.spell.desc), el("div", { class: "b-hint" }, pending.spell.target === "enemy" ? "→ 点选一个敌人" : "→ 点选要护住的对象"))
+          : el("div", { class: "b-log" }, ...b.log.map((t) => el("div", {}, t)));
 
         const me = el("div", { class: "b-me" },
           guardCard(b.player, "你"),
@@ -396,7 +399,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
 
         const cards = el("div", { class: "b-hand" }, ...b.hand().map((s) => {
           const why = b.canCast(s);
-          const c = el("button", { class: `card k-${s.kind} ${why ? "off" : ""} ${pending?.spell === s ? "picked" : ""}` },
+          const c = el("button", { class: `card k-${s.kind} ${why ? "off" : ""} ${pending?.spell === s ? "picked" : ""}`, "data-glyph": s.name[0] },
             el("span", { class: "c-cost" }, s.paper ? `${s.cost}·纸${s.paper}` : String(s.cost)),
             el("span", { class: "c-name" }, s.name),
             el("span", { class: "c-desc" }, s.brief),
@@ -435,14 +438,13 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
           if (pending) { pending = null; render(); return; }
           endTurn();
         });
-        const hint = pending ? el("div", { class: "b-hint" }, `${pending.spell.desc}\n${pending.spell.target === "enemy" ? "→ 选择一个敌人" : "→ 选择要护住的对象"}`) : "";
 
         root.replaceChildren(
           head,
           foes,
           el("div", { class: "b-mid" }, ritual, guards.length ? el("div", { class: "b-guards" }, ...guards) : ""),
           log,
-          el("div", { class: "b-bottom" }, me, hint, cards, acts, endBtn),
+          el("div", { class: "b-bottom" }, me, cards, acts, endBtn),
         );
       };
 
@@ -462,6 +464,8 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         const tgtEl = isFoe ? q(`.foe[data-uid="${(target as Enemy).uid}"]`)
           : target ? q(`.guard[data-unit="${target === b.player ? "player" : target === b.ally ? "ally" : "object"}"]`) : q(".b-foes");
         const before = isFoe ? (target as Enemy).hp : 0;
+        sfx("cast");
+        setTimeout(() => sfx(s.name === "破煞符" ? "whoosh2" : "whoosh"), 60);
         if (tgtEl) await castTalisman(from, tgtEl.getBoundingClientRect(), color, s.name === "破煞符");
         b.cast(s, target);
         if (isFoe && tgtEl) {
@@ -492,6 +496,9 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
 
       const endTurn = async () => {
         busy = true;
+        banner("敌方行动", true);
+        sfx("swing");
+        await wait(650);
         root.classList.add("enemy-turn");
         await b.enemyPhase(render);
         root.classList.remove("enemy-turn");
@@ -501,7 +508,14 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         b.startTurn();
         busy = false;
         render();
+        banner(`第 ${b.turn} 回合`);
         showTip();
+      };
+
+      const banner = (text: string, enemy = false) => {
+        const d = el("div", { class: `turn-banner ${enemy ? "enemy" : ""}` }, el("span", {}, text));
+        root.append(d);
+        setTimeout(() => d.remove(), 1150);
       };
 
       const showTip = () => {
@@ -513,7 +527,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
         busy = true;
         await wait(400);
         if (r === "win") {
-          sfx("seal");
+          sfx("win");
           const card = el("div", { class: "b-result win" },
             el("div", { class: "big-seal" }, def.kind === "ritual" ? "成" : "破"),
             el("div", {}, `${def.title} · 完成`),
@@ -525,7 +539,7 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
           });
           root.append(card);
         } else {
-          sfx("miss");
+          sfx("lose");
           const reason = b.player.hp <= 0 ? "你撑不住了。" : b.ally && b.ally.hp <= 0 ? `${b.ally.name}受了伤。` : b.object && b.object.hp <= 0 ? `${b.object.name}被毁了。` : "时间来不及了。";
           const card = el("div", { class: "b-result lose" },
             el("div", {}, reason),
@@ -556,7 +570,9 @@ export function runBattle(id: string, spells: string[]): Promise<BattleResult> {
 
       b.startTurn();
       render();
-      showTip();
+      banner(def.title);
+      sfx("summon");
+      setTimeout(showTip, 1150);
     };
 
     start(0);

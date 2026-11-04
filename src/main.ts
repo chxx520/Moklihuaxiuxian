@@ -1,7 +1,9 @@
 // 入口：标题画面、新游戏、继续、存读档、章节回溯、旧事录、设置、试玩日志、调试面板。
 import { titleHtml } from "./art";
+import { setWeather } from "./fx";
+import { inkWipe, installTheme } from "./theme";
 import { assetCount } from "./assets";
-import { applyVolume, playMusic, stopMusic, unlockAudio } from "./audio";
+import { applyVolume, playMusic, setAmbience, sfx, stopMusic, unlockAudio } from "./audio";
 import { battleIds } from "./battle";
 import { Engine, GameState, newState } from "./engine";
 import { lintStory, parseStory, parseValue } from "./parser";
@@ -22,7 +24,8 @@ let presenter: DomPresenter;
 let engine: Engine | null = null;
 
 function sheet(title: string, body: HTMLElement, actions: [string, () => void][] = []) {
-  const close = () => wrap.remove();
+  sfx("open");
+  const close = () => { sfx("close"); wrap.remove(); };
   const wrap = el("div", { class: "sheet-wrap" },
     el("div", { class: "sheet" },
       el("div", { class: "sheet-head" }, el("h2", {}, title), el("button", { class: "icon" }, "✕")),
@@ -128,6 +131,17 @@ function showLog() {
   ]);
 }
 
+function showCredits() {
+  sheet("致谢", el("div", { class: "credits" },
+    el("h3", {}, "字体"),
+    el("p", {}, "霞鹜文楷 LXGW WenKai，SIL Open Font License 1.1。"),
+    el("h3", {}, "音效"),
+    el("p", {}, "\"Oculus Audio Pack 01\" by Oculus VR, LLC (https://developers.meta.com/vr/downloads/package/oculus-audio-pack-1/), licensed under CC BY 4.0. Files renamed to the UCS naming convention; OGG previews transcoded from the original WAVs. 本游戏使用时转为 AAC 格式并截选。"),
+    el("h3", {}, "美术"),
+    el("p", {}, "人物、场景与插画为本项目原创生成。"),
+  ));
+}
+
 function showMenu() {
   sheet("菜单", el("p", { class: "dim" }, `进度会自动保存。\n版本 ${__BUILD__}`), [
     ["存档", () => showSlots("save")],
@@ -135,6 +149,7 @@ function showMenu() {
     ["章节回溯", () => showCheckpoints()],
     ["设置", () => showSettings()],
     ["试玩日志", () => showLog()],
+    ["致谢", () => showCredits()],
     ["回到标题", () => toTitle()],
     ["调试面板", () => showDebug()],
   ]);
@@ -175,6 +190,11 @@ function showDebug() {
 }
 
 function startFrom(state: GameState) {
+  if (!$("#title").hidden) { void inkWipe(() => startFromNow(state)); return; }
+  startFromNow(state);
+}
+
+function startFromNow(state: GameState) {
   engine?.stop();
   presenter.reset();
   document.querySelectorAll(".battle, .draw, .cg, .time-card, .end-card").forEach((n) => n.remove());
@@ -209,6 +229,8 @@ function toTitle(finished = false) {
   $("#game").hidden = true;
   $("#title").hidden = false;
   playMusic("主题");
+  setAmbience("环境_风林");
+  setWeather($("#title"), "petals");
   const saves = loadSaves();
   const cont = $<HTMLButtonElement>("#btn-continue");
   cont.hidden = !saves.auto;
@@ -217,6 +239,7 @@ function toTitle(finished = false) {
 }
 
 function boot() {
+  installTheme();
   presenter = new DomPresenter();
   $("#title-art").innerHTML = titleHtml();
   $("#version").textContent = `原型 ${__BUILD__}`;

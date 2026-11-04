@@ -1,7 +1,7 @@
 // 界面层：实现 Presenter，负责把剧情显示到屏幕上并等待玩家操作。
 import { figureHtml, hasPortrait, isMood, MOODS, sceneHtml } from "./art";
 import { findAsset } from "./assets";
-import { playMusic, sfx, unlockAudio } from "./audio";
+import { ambienceFor, playMusic, setAmbience, sfx, unlockAudio } from "./audio";
 import { runBattle } from "./battle";
 import { runDraw } from "./draw";
 import { setWeather, weatherFor } from "./fx";
@@ -78,6 +78,7 @@ export class DomPresenter implements Presenter {
     this.art.append(layer);
     requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add("in")));
     setWeather($("#stage"), weatherFor(name, m, image));
+    setAmbience(ambienceFor(name, m, image));
     const old = [...this.art.children].slice(0, -1);
     setTimeout(() => old.forEach((o) => o.remove()), 1300);
 
@@ -177,7 +178,14 @@ export class DomPresenter implements Presenter {
           b.addEventListener("click", (e) => {
             e.stopPropagation();
             if (it.locked) { sfx("miss"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); return; }
+            if (this.choices.dataset.busy) return;
             sfx("page");
+            // 选中的选项亮一下飞出，其余淡出，再进入下一句
+            this.choices.dataset.busy = "1";
+            [...this.choices.children].forEach((o) => (o as HTMLElement).style.opacity = o === b ? "" : "0.25");
+            b.classList.add("picked-out");
+            setTimeout(() => { delete this.choices.dataset.busy; this.choices.replaceChildren(); resolve(i); }, 170);
+            return;
             this.choices.replaceChildren();
             resolve(i);
           });

@@ -21,7 +21,7 @@ function storyFiles() {
 }
 
 // 素材：assets/ 下的图片转成 webp（限制尺寸），音乐原样复制；生成清单供游戏查找
-const ASSET_KINDS = ["characters", "scenes", "cg", "enemies", "items", "music"];
+const ASSET_KINDS = ["characters", "scenes", "cg", "enemies", "items", "music", "sfx", "ui"];
 async function buildAssets(outDir) {
   const list = [];
   const cacheDir = join(root, ".cache/assets");
